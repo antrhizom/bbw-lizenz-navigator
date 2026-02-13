@@ -10,6 +10,12 @@ export interface Tool {
   lizenz: string;
   lizenzDetail?: string;
   funcs: string;
+  /** Erweiterte Funktionsliste (recherchiert) */
+  features: string[];
+  /** Wie man Zugang erhält */
+  zugang: string;
+  /** PDF-Anleitungs-Platzhalter (Pfad oder null) */
+  anleitungPdf?: string;
   beherrschen: boolean;
   lernen: boolean;
   lpOrg: boolean;
