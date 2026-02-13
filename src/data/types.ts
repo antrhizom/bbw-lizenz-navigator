@@ -14,7 +14,13 @@ export interface Tool {
   features: string[];
   /** Wie man Zugang erhält */
   zugang: string;
-  /** PDF-Anleitungs-Platzhalter (Pfad oder null) */
+  /** Hinweis zur Einzellizenz-Nutzung */
+  einzellizenzInfo?: string;
+  /** Website-Link des Tools */
+  website?: string;
+  /** PDF-Anleitungen (mehrere möglich) */
+  anleitungPdfs?: { label: string; path: string }[];
+  /** @deprecated Einzelne PDF-Anleitung – nutze anleitungPdfs */
   anleitungPdf?: string;
   beherrschen: boolean;
   lernen: boolean;

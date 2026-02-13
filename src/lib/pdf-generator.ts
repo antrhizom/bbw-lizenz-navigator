@@ -10,7 +10,7 @@ export function generateLicensePdf(
 
   // Header
   doc.setFontSize(18);
-  doc.setTextColor(181, 18, 27);
+  doc.setTextColor(0, 150, 69);
   doc.text("BBW Lizenz-Navigator", 14, 18);
 
   doc.setFontSize(10);
@@ -50,8 +50,8 @@ export function generateLicensePdf(
       t.funcs,
     ]),
     styles: { fontSize: 7.5, cellPadding: 2.5 },
-    headStyles: { fillColor: [181, 18, 27], textColor: 255, fontStyle: "bold" },
-    alternateRowStyles: { fillColor: [254, 242, 242] },
+    headStyles: { fillColor: [0, 150, 69], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [230, 245, 236] },
     columnStyles: {
       0: { cellWidth: 32, fontStyle: "bold" },
       1: { cellWidth: 42 },

@@ -15,7 +15,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="bg-gradient-to-br from-bbw-red-dark to-bbw-red text-white">
+    <header className="bg-gradient-to-br from-bbw-primary-dark to-bbw-primary text-white">
       <div className="max-w-6xl mx-auto px-5 py-6">
         <div className="flex items-center justify-between">
           <div>

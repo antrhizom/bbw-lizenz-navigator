@@ -44,7 +44,7 @@ export default function HomePage() {
     <div className="max-w-6xl mx-auto px-5 py-8">
       {/* Hero */}
       <section className="bg-white rounded-xl shadow-sm p-8 mb-8">
-        <h2 className="text-2xl font-bold text-bbw-red mb-4">
+        <h2 className="text-2xl font-bold text-bbw-primary mb-4">
           Pädagogik, Didaktik und Lerntechnologien
         </h2>
         <div className="text-sm text-gray-700 leading-relaxed space-y-3">
@@ -127,7 +127,7 @@ export default function HomePage() {
               key={s.label}
               className="bg-white rounded-xl shadow-sm border border-bbw-border p-4 text-center"
             >
-              <div className="text-3xl font-extrabold text-bbw-red">
+              <div className="text-3xl font-extrabold text-bbw-primary">
                 {s.num}
               </div>
               <div className="text-xs text-bbw-muted mt-1">{s.label}</div>
@@ -145,7 +145,7 @@ export default function HomePage() {
         </p>
         <Link
           href="/lizenzen"
-          className="inline-block bg-bbw-red text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-bbw-red-dark transition-colors"
+          className="inline-block bg-bbw-primary text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-bbw-primary-dark transition-colors"
         >
           Lizenzübersicht öffnen
         </Link>

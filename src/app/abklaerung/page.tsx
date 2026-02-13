@@ -12,7 +12,7 @@ export default function AbklaerungPage() {
     <div className="max-w-6xl mx-auto px-5 py-8">
       {/* Intro */}
       <section className="bg-white rounded-xl shadow-sm p-8 mb-8">
-        <h2 className="text-2xl font-bold text-bbw-red mb-4">
+        <h2 className="text-2xl font-bold text-bbw-primary mb-4">
           Abklärung &amp; Anschaffung von Lerntechnologien
         </h2>
         <div className="text-sm text-gray-700 leading-relaxed space-y-3">
