@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Startseite" },
   { href: "/abklaerung", label: "Abklärung & Anschaffung" },
   { href: "/lizenzen", label: "Lizenzübersicht" },
+  { href: "/zugang", label: "Zugang & Rollen" },
 ];
 
 export default function Header() {
