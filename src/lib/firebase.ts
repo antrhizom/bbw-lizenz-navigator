@@ -16,6 +16,7 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 /** Ist die Firebase-Konfiguration überhaupt vorhanden? */
@@ -29,15 +30,14 @@ const app: FirebaseApp =
 let analyticsInstance: Analytics | null = null;
 
 export async function initAnalytics(): Promise<Analytics | null> {
+  // Ohne measurementId versucht getAnalytics() dennoch, sich bei Firebase zu
+  // registrieren, und schlägt dann asynchron mit einem Konsolenfehler fehl –
+  // das lässt sich nicht per try/catch abfangen. Deshalb hier gar nicht erst
+  // starten, solange kein Google-Analytics-Datenstream verknüpft ist.
+  if (!firebaseConfig.measurementId) return null;
   if (typeof window !== "undefined" && (await isSupported())) {
     if (!analyticsInstance) {
-      try {
-        analyticsInstance = getAnalytics(app);
-      } catch {
-        // Ohne measurementId ist Analytics nicht verfügbar – kein Grund,
-        // die Seite scheitern zu lassen.
-        return null;
-      }
+      analyticsInstance = getAnalytics(app);
     }
     return analyticsInstance;
   }
