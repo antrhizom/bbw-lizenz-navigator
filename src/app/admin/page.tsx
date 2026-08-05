@@ -266,6 +266,19 @@ function Section({
   );
 }
 
+/** Firestore-Fehler verständlich benennen, mit Code als Beleg. */
+function firestoreFehler(vorgang: string, err: unknown): string {
+  const code = err instanceof FirebaseError ? err.code : "";
+  const roh = (err as Error)?.message ?? String(err);
+  if (code === "unavailable") {
+    return `${vorgang} fehlgeschlagen: keine Verbindung zu Firestore. Meist blockiert ein Proxy oder eine Firewall den Zugriff auf firestore.googleapis.com. (${code})`;
+  }
+  if (code === "permission-denied") {
+    return `${vorgang} fehlgeschlagen: Firestore verweigert den Zugriff. Steht das Konto in der Collection admins und sind die Regeln veröffentlicht? (${code})`;
+  }
+  return `${vorgang} fehlgeschlagen: ${roh}${code ? ` (${code})` : ""}`;
+}
+
 /** Firebase-Auth-Fehlercodes in verständliche Meldungen übersetzen. */
 function authFehler(err: unknown): string {
   const code = err instanceof FirebaseError ? err.code : "";
@@ -537,10 +550,7 @@ export default function AdminPage() {
     try {
       setTools(await fetchAllTools());
     } catch (err) {
-      setMessage({
-        kind: "err",
-        text: `Tools konnten nicht geladen werden: ${(err as Error).message}`,
-      });
+      setMessage({ kind: "err", text: firestoreFehler("Laden", err) });
     }
   }, []);
 
@@ -628,7 +638,7 @@ export default function AdminPage() {
         text: `«${tool.name}» wurde gespeichert.${tool.hidden ? " (Entwurf – noch nicht öffentlich sichtbar)" : ""}`,
       });
     } catch (err) {
-      setMessage({ kind: "err", text: `Speichern fehlgeschlagen: ${(err as Error).message}` });
+      setMessage({ kind: "err", text: firestoreFehler("Speichern", err) });
     } finally {
       setBusy(false);
     }
@@ -648,7 +658,7 @@ export default function AdminPage() {
       if (draft?.id === tool.id) setDraft(null);
       setMessage({ kind: "ok", text: `«${tool.name}» wurde gelöscht.` });
     } catch (err) {
-      setMessage({ kind: "err", text: `Löschen fehlgeschlagen: ${(err as Error).message}` });
+      setMessage({ kind: "err", text: firestoreFehler("Löschen", err) });
     } finally {
       setBusy(false);
     }
@@ -674,7 +684,7 @@ export default function AdminPage() {
             : "Alle Tools sind bereits in Firestore vorhanden.",
       });
     } catch (err) {
-      setMessage({ kind: "err", text: `Import fehlgeschlagen: ${(err as Error).message}` });
+      setMessage({ kind: "err", text: firestoreFehler("Import", err) });
     } finally {
       setBusy(false);
     }
@@ -687,7 +697,7 @@ export default function AdminPage() {
       await saveTool({ ...tool, hidden: !tool.hidden }, user.email);
       await loadTools();
     } catch (err) {
-      setMessage({ kind: "err", text: `Änderung fehlgeschlagen: ${(err as Error).message}` });
+      setMessage({ kind: "err", text: firestoreFehler("Änderung", err) });
     } finally {
       setBusy(false);
     }
