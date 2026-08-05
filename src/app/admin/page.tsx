@@ -510,6 +510,7 @@ export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [admin, setAdmin] = useState<boolean | null>(null);
+  const [adminFehler, setAdminFehler] = useState<string | null>(null);
   const [tools, setTools] = useState<StoredTool[]>([]);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -546,16 +547,28 @@ export default function AdminPage() {
   useEffect(() => {
     if (!user?.email) {
       setAdmin(null);
+      setAdminFehler(null);
       return;
     }
     let active = true;
+    setAdminFehler(null);
     isAdminEmail(user.email)
       .then((ok) => {
         if (!active) return;
         setAdmin(ok);
         if (ok) loadTools();
       })
-      .catch(() => active && setAdmin(false));
+      .catch((err) => {
+        if (!active) return;
+        // Wichtig: ein fehlgeschlagener Aufruf ist NICHT dasselbe wie «nicht
+        // freigeschaltet». Den Originalfehler zeigen, sonst ist die Ursache
+        // (Regeln, Verbindung, Projekt) nicht auffindbar.
+        setAdmin(false);
+        const code = err instanceof FirebaseError ? err.code : "";
+        setAdminFehler(
+          `${code || "Fehler"}: ${(err as Error).message ?? String(err)}`
+        );
+      });
     return () => {
       active = false;
     };
@@ -727,14 +740,47 @@ export default function AdminPage() {
 
   if (admin === false) {
     return (
-      <div className="max-w-md mx-auto px-5 py-16">
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-          <h2 className="text-xl font-bold text-bbw-text mb-2">Kein Zugriff</h2>
-          <p className="text-sm text-bbw-muted">
-            Das Konto <strong>{user.email}</strong> ist nicht für die
-            Administration freigeschaltet. Die Freischaltung erfolgt durch das
-            PIKT-Team.
-          </p>
+      <div className="max-w-lg mx-auto px-5 py-16">
+        <div className="bg-white rounded-xl shadow-sm p-8">
+          {adminFehler ? (
+            <>
+              <h2 className="text-xl font-bold text-bbw-text mb-2">
+                Berechtigung konnte nicht geprüft werden
+              </h2>
+              <p className="text-sm text-bbw-muted">
+                Die Abfrage von <code>admins/{user.email?.toLowerCase()}</code>{" "}
+                in Firestore ist fehlgeschlagen. Das heisst <em>nicht</em>, dass
+                das Konto nicht freigeschaltet ist – die Prüfung selbst kam nicht
+                durch.
+              </p>
+              <p className="mt-3 text-xs font-mono bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-red-800 break-words">
+                {adminFehler}
+              </p>
+              <ul className="mt-3 text-xs text-bbw-muted space-y-1">
+                <li>
+                  • <code>permission-denied</code>: Die Firestore-Regeln lassen
+                  den Lesezugriff auf das eigene <code>admins</code>-Dokument
+                  nicht zu.
+                </li>
+                <li>
+                  • <code>unavailable</code> / <code>failed-precondition</code>:
+                  Firestore ist im Projekt nicht erreichbar oder nicht angelegt.
+                </li>
+              </ul>
+            </>
+          ) : (
+            <>
+              <h2 className="text-xl font-bold text-bbw-text mb-2">
+                Kein Zugriff
+              </h2>
+              <p className="text-sm text-bbw-muted">
+                Die Prüfung war erfolgreich, aber für{" "}
+                <strong>{user.email}</strong> existiert kein Dokument{" "}
+                <code>admins/{user.email?.toLowerCase()}</code>. Die
+                Freischaltung erfolgt durch das PIKT-Team.
+              </p>
+            </>
+          )}
           <button
             onClick={() => signOut(getAuthClient())}
             className="mt-6 text-sm text-bbw-primary font-semibold hover:underline"
