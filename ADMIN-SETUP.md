@@ -6,8 +6,13 @@ leer oder nicht erreichbar ist, zeigt die Übersicht automatisch die statischen 
 aus [`src/data/tools.ts`](src/data/tools.ts) an – die Seite kann also nicht kaputtgehen.
 
 Einmalige Einrichtung im Firebase-Projekt **`bbw-lizenzen-ffbef`**
-(<https://console.firebase.google.com/project/bbw-lizenzen-ffbef>). Die
-Web-Konfiguration steht in [`src/lib/firebase.ts`](src/lib/firebase.ts).
+(<https://console.firebase.google.com/project/bbw-lizenzen-ffbef>).
+
+Die Web-Konfiguration liegt in Umgebungsvariablen, nicht im Code: lokal in
+`.env.local`, für die Live-Version in den Vercel-Projekteinstellungen unter
+**Settings → Environment Variables** (`NEXT_PUBLIC_FIREBASE_*`). Weil
+`NEXT_PUBLIC_*`-Werte beim Build eingesetzt werden, ist nach einer Änderung ein
+**erneuter Deploy** nötig.
 
 ## 1. Firestore aktivieren
 

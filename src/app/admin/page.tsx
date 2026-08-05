@@ -10,7 +10,7 @@ import {
   User,
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
-import { getAuthClient } from "@/lib/firebase";
+import { firebaseKonfiguriert, getAuthClient } from "@/lib/firebase";
 import {
   deleteTool,
   fetchAllTools,
@@ -522,6 +522,10 @@ export default function AdminPage() {
   const [showPasswort, setShowPasswort] = useState(false);
 
   useEffect(() => {
+    if (!firebaseKonfiguriert) {
+      setAuthReady(true);
+      return;
+    }
     return onAuthStateChanged(getAuthClient(), (u) => {
       setUser(u);
       setAuthReady(true);
@@ -677,6 +681,29 @@ export default function AdminPage() {
   };
 
   /* ------------------------------------------------------------- Anmeldung */
+
+  if (!firebaseKonfiguriert) {
+    return (
+      <div className="max-w-md mx-auto px-5 py-16">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-sm">
+          <h2 className="font-bold text-amber-900 mb-2">
+            Firebase ist nicht konfiguriert
+          </h2>
+          <p className="text-amber-800">
+            Die Umgebungsvariablen <code>NEXT_PUBLIC_FIREBASE_*</code> fehlen.
+            Lokal gehören sie in <code>.env.local</code>, für die Live-Version in
+            die Vercel-Projekteinstellungen (Settings → Environment Variables).
+            Danach ist ein erneuter Deploy nötig, weil die Werte beim Build
+            eingesetzt werden.
+          </p>
+          <p className="text-amber-800 mt-2">
+            Die Lizenzübersicht funktioniert weiterhin – sie zeigt in diesem
+            Zustand die im Code hinterlegte Tool-Liste.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!authReady) {
     return (
