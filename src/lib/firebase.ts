@@ -1,10 +1,5 @@
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
-import {
-  getFirestore,
-  initializeFirestore,
-  Firestore,
-} from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 
 // Firebase-Web-Konfiguration des Projekts «bbw-lizenzen-42».
@@ -48,30 +43,10 @@ export async function initAnalytics(): Promise<Analytics | null> {
   return null;
 }
 
-let dbInstance: Firestore | null = null;
-
-/**
- * Firestore-Instanz (lazy, damit beim SSR nichts unnötig initialisiert wird).
- *
- * Long Polling wird erzwungen: Firestore nutzt normalerweise eine
- * Streaming-Verbindung (WebChannel), die im BBW-Netz vom Proxy abgeschnitten
- * wird – das SDK meldet dann «Failed to get document because the client is
- * offline», obwohl das Projekt erreichbar ist. Long Polling läuft über
- * gewöhnliche HTTPS-Requests und kommt durch.
- */
-export function getDb(): Firestore {
-  if (!dbInstance) {
-    try {
-      dbInstance = initializeFirestore(app, {
-        experimentalForceLongPolling: true,
-      });
-    } catch {
-      // Bereits initialisiert (z. B. durch Hot Reload) – bestehende Instanz.
-      dbInstance = getFirestore(app);
-    }
-  }
-  return dbInstance;
-}
+// Firestore wird bewusst nicht über das SDK angesprochen, sondern über die
+// REST-Schnittstelle (siehe src/lib/firestore-rest.ts): das SDK bekam im
+// BBW-Netz seine Verbindung nicht auf und meldete «client is offline», auch mit
+// erzwungenem Long Polling. Gewöhnliche HTTPS-Requests funktionieren dort.
 
 let authInstance: Auth | null = null;
 

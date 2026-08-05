@@ -1,14 +1,10 @@
 import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  Timestamp,
-  writeBatch,
-} from "firebase/firestore";
-import { getDb } from "./firebase";
+  deleteDocument,
+  FsTimestamp,
+  getDocument,
+  listDocuments,
+  setDocument,
+} from "./firestore-rest";
 import { Tool, StoredTool } from "@/data/types";
 import { TOOLS } from "@/data/tools";
 
@@ -17,27 +13,45 @@ export const ADMINS_COLLECTION = "admins";
 
 export type ToolSource = "firestore" | "static";
 
-/** Firestore akzeptiert keine `undefined`-Werte – vor dem Schreiben entfernen. */
-function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value !== undefined) out[key] = value;
-  }
-  return out as T;
-}
+/**
+ * Alle Feldnamen eines Tool-Dokuments. Wird als updateMask verwendet, damit
+ * beim Speichern weggelassene Felder auch wirklich verschwinden.
+ */
+const TOOL_FELDER = [
+  "name",
+  "typ",
+  "ki",
+  "kiDetail",
+  "lernende",
+  "lernendeDetail",
+  "lp",
+  "lizenz",
+  "lizenzDetail",
+  "funcs",
+  "features",
+  "zugang",
+  "einzellizenzInfo",
+  "website",
+  "anleitungPdfs",
+  "beherrschen",
+  "lernen",
+  "lpOrg",
+  "lpVorb",
+  "behDesc",
+  "lernDesc",
+  "lpOrgDesc",
+  "lpVorbDesc",
+  "hidden",
+  "sortIndex",
+  "updatedAt",
+  "updatedBy",
+];
 
 /** Rohdaten aus Firestore in einen vollständigen Tool-Datensatz überführen. */
 function normalize(id: string, raw: Record<string, unknown>): StoredTool {
   const str = (v: unknown, fallback = "") =>
     typeof v === "string" ? v : fallback;
   const bool = (v: unknown) => v === true;
-
-  const updatedAt =
-    raw.updatedAt instanceof Timestamp
-      ? raw.updatedAt.toDate().toISOString()
-      : typeof raw.updatedAt === "string"
-        ? raw.updatedAt
-        : undefined;
 
   return {
     id,
@@ -82,7 +96,7 @@ function normalize(id: string, raw: Record<string, unknown>): StoredTool {
     lpVorbDesc: str(raw.lpVorbDesc),
     hidden: bool(raw.hidden),
     sortIndex: typeof raw.sortIndex === "number" ? raw.sortIndex : undefined,
-    updatedAt,
+    updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : undefined,
     updatedBy: typeof raw.updatedBy === "string" ? raw.updatedBy : undefined,
   };
 }
@@ -94,15 +108,25 @@ function bySortIndex(a: Tool, b: Tool): number {
   return a.name.localeCompare(b.name, "de-CH");
 }
 
+/** Tool-Felder für das Schreiben aufbereiten (ohne id, mit Metadaten). */
+function toFelder(tool: Tool, editorEmail: string): Record<string, unknown> {
+  const felder: Record<string, unknown> = {
+    ...tool,
+    updatedAt: FsTimestamp.jetztIso(),
+    updatedBy: editorEmail,
+  };
+  // Die ID ist der Dokumentname, kein Feld im Dokument.
+  delete felder.id;
+  return felder;
+}
+
 /**
  * Alle Tools inkl. Entwürfe – für die Adminseite.
  * Wirft, wenn Firestore nicht erreichbar ist.
  */
 export async function fetchAllTools(): Promise<StoredTool[]> {
-  const snap = await getDocs(collection(getDb(), TOOLS_COLLECTION));
-  return snap.docs
-    .map((d) => normalize(d.id, d.data() as Record<string, unknown>))
-    .sort(bySortIndex);
+  const docs = await listDocuments(TOOLS_COLLECTION);
+  return docs.map((d) => normalize(d.id, d.fields)).sort(bySortIndex);
 }
 
 /**
@@ -115,8 +139,12 @@ export async function fetchPublicTools(): Promise<{
   source: ToolSource;
 }> {
   try {
-    const all = await fetchAllTools();
-    const visible = all.filter((t) => !t.hidden);
+    // Ohne Anmeldung lesen – die Regeln erlauben öffentlichen Lesezugriff.
+    const docs = await listDocuments(TOOLS_COLLECTION, { authentisiert: false });
+    const visible = docs
+      .map((d) => normalize(d.id, d.fields))
+      .filter((t) => !t.hidden)
+      .sort(bySortIndex);
     if (visible.length > 0) {
       return { tools: visible, source: "firestore" };
     }
@@ -128,25 +156,20 @@ export async function fetchPublicTools(): Promise<{
 
 /** Tool anlegen oder aktualisieren. Die Tool-ID ist die Dokument-ID. */
 export async function saveTool(tool: Tool, editorEmail: string): Promise<void> {
-  const { id, ...rest } = tool;
-  await setDoc(
-    doc(getDb(), TOOLS_COLLECTION, id),
-    stripUndefined({
-      ...rest,
-      updatedAt: Timestamp.now(),
-      updatedBy: editorEmail,
-    }),
-    { merge: false }
+  await setDocument(
+    TOOLS_COLLECTION,
+    tool.id,
+    toFelder(tool, editorEmail),
+    TOOL_FELDER
   );
 }
 
 export async function deleteTool(id: string): Promise<void> {
-  await deleteDoc(doc(getDb(), TOOLS_COLLECTION, id));
+  await deleteDocument(TOOLS_COLLECTION, id);
 }
 
 export async function toolExists(id: string): Promise<boolean> {
-  const snap = await getDoc(doc(getDb(), TOOLS_COLLECTION, id));
-  return snap.exists();
+  return (await getDocument(TOOLS_COLLECTION, id)) !== null;
 }
 
 /**
@@ -155,32 +178,24 @@ export async function toolExists(id: string): Promise<boolean> {
  */
 export async function seedFromStatic(editorEmail: string): Promise<number> {
   const existing = new Set((await fetchAllTools()).map((t) => t.id));
-  const batch = writeBatch(getDb());
   let written = 0;
 
-  TOOLS.forEach((tool, index) => {
-    if (existing.has(tool.id)) return;
-    const { id, ...rest } = tool;
-    batch.set(
-      doc(getDb(), TOOLS_COLLECTION, id),
-      stripUndefined({
-        ...rest,
-        sortIndex: rest.sortIndex ?? index,
-        updatedAt: Timestamp.now(),
-        updatedBy: editorEmail,
-      })
+  for (const [index, tool] of TOOLS.entries()) {
+    if (existing.has(tool.id)) continue;
+    await setDocument(
+      TOOLS_COLLECTION,
+      tool.id,
+      toFelder({ ...tool, sortIndex: tool.sortIndex ?? index }, editorEmail),
+      TOOL_FELDER
     );
     written++;
-  });
+  }
 
-  if (written > 0) await batch.commit();
   return written;
 }
 
 /** Prüft, ob die E-Mail in der Admin-Whitelist (Collection `admins`) steht. */
 export async function isAdminEmail(email: string): Promise<boolean> {
-  const snap = await getDoc(
-    doc(getDb(), ADMINS_COLLECTION, email.toLowerCase())
-  );
-  return snap.exists();
+  const doc = await getDocument(ADMINS_COLLECTION, email.toLowerCase());
+  return doc !== null;
 }

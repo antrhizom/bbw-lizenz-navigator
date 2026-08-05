@@ -266,9 +266,16 @@ function Section({
   );
 }
 
+/** Fehlercode aus Firebase- oder REST-Fehlern lesen. */
+function fehlerCode(err: unknown): string {
+  if (err instanceof FirebaseError) return err.code;
+  const code = (err as { code?: unknown })?.code;
+  return typeof code === "string" ? code : "";
+}
+
 /** Firestore-Fehler verständlich benennen, mit Code als Beleg. */
 function firestoreFehler(vorgang: string, err: unknown): string {
-  const code = err instanceof FirebaseError ? err.code : "";
+  const code = fehlerCode(err);
   const roh = (err as Error)?.message ?? String(err);
   if (code === "unavailable") {
     return `${vorgang} fehlgeschlagen: keine Verbindung zu Firestore. Meist blockiert ein Proxy oder eine Firewall den Zugriff auf firestore.googleapis.com. (${code})`;
@@ -574,7 +581,7 @@ export default function AdminPage() {
         // freigeschaltet». Den Originalfehler zeigen, sonst ist die Ursache
         // (Regeln, Verbindung, Projekt) nicht auffindbar.
         setAdmin(false);
-        const code = err instanceof FirebaseError ? err.code : "";
+        const code = fehlerCode(err);
         setAdminFehler(
           `${code || "Fehler"}: ${(err as Error).message ?? String(err)}`
         );
