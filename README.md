@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+BBW Lizenz-Navigator – Übersicht der Lerntechnologie-Lizenzen der Berufsbildungsschule
+Winterthur, inkl. Abklärungsprozess, Zugangs-/Rollenkonzept und PDF-Export.
+
+## Inhalte pflegen
+
+Tools und Lizenzen werden über die Adminseite **`/admin`** erfasst (Anmeldung mit
+E-Mail und Passwort, Berechtigung über eine Whitelist, Speicherung in Firestore).
+Einrichtung und Bedienung: [ADMIN-SETUP.md](ADMIN-SETUP.md).
+
+Die Datei `src/data/tools.ts` dient nur noch als Fallback, falls Firestore leer oder
+nicht erreichbar ist.
 
 ## Getting Started
 

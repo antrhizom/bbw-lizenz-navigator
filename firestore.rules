@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Sicherheitsregeln für den BBW Lizenz-Navigator.
+//
+// - Tools: für alle lesbar (öffentliche Lizenzübersicht), schreibbar nur für
+//   Konten, die in der Collection `admins` freigeschaltet sind.
+// - admins/{email}: die Whitelist. Dokument-ID ist die E-Mail in Kleinbuchstaben,
+//   der Inhalt ist beliebig (z. B. { name: "Vorname Nachname" }).
+//   Diese Dokumente können ausschliesslich in der Firebase-Konsole angelegt
+//   oder entfernt werden – kein Schreibzugriff über die App.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Konten werden in der Firebase-Konsole angelegt (E-Mail/Passwort) und sind
+    // dort nicht als verifiziert markiert – die Whitelist ist die Berechtigung.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()));
+    }
+
+    match /tools/{toolId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /admins/{email} {
+      // Angemeldete Konten dürfen nur ihren eigenen Whitelist-Eintrag prüfen.
+      allow get: if request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() == email;
+      allow list, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

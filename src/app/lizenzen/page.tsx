@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { TOOLS } from "@/data/tools";
 import { Tool } from "@/data/types";
 import { generateLicensePdf } from "@/lib/pdf-generator";
 import { trackEvent } from "@/lib/analytics";
+import { fetchPublicTools } from "@/lib/tools-repo";
 
 // Extract unique license categories
 const LICENSE_CATEGORIES = [
@@ -30,14 +31,14 @@ function getLicenseCategory(lizenz: string): string {
   return lizenz;
 }
 
-// Extract unique tool types
-const TOOL_TYPES = Array.from(
-  new Set(
-    TOOLS.flatMap((t) =>
-      t.typ.split(",").map((s) => s.trim())
-    )
+// Extract unique tool types from the loaded tool set
+function toolTypes(tools: Tool[]): string[] {
+  return Array.from(
+    new Set(tools.flatMap((t) => t.typ.split(",").map((s) => s.trim())))
   )
-).sort();
+    .filter(Boolean)
+    .sort();
+}
 
 interface Filters {
   search: string;
@@ -198,6 +199,22 @@ function ToolCard({ tool }: { tool: Tool }) {
 
 export default function LizenzenPage() {
   const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [tools, setTools] = useState<Tool[]>(TOOLS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    fetchPublicTools().then(({ tools: loaded }) => {
+      if (!active) return;
+      setTools(loaded);
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const TOOL_TYPES = useMemo(() => toolTypes(tools), [tools]);
 
   const updateFilter = <K extends keyof Filters>(
     key: K,
@@ -223,7 +240,7 @@ export default function LizenzenPage() {
   };
 
   const filteredTools = useMemo(() => {
-    return TOOLS.filter((t) => {
+    return tools.filter((t) => {
       if (
         filters.search &&
         !t.name.toLowerCase().includes(filters.search.toLowerCase()) &&
@@ -249,7 +266,7 @@ export default function LizenzenPage() {
 
       return true;
     });
-  }, [filters]);
+  }, [filters, tools]);
 
   const activeFilterLabels = useMemo(() => {
     const labels: string[] = [];
@@ -412,7 +429,8 @@ export default function LizenzenPage() {
         <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-bbw-border">
           <div className="text-xs text-bbw-muted">
             <strong className="text-bbw-text">{filteredTools.length}</strong> von{" "}
-            {TOOLS.length} Tools
+            {tools.length} Tools
+            {loading && <span className="ml-2 italic">wird aktualisiert…</span>}
           </div>
 
           {hasActiveFilters && (

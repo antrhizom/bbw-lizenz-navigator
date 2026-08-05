@@ -30,6 +30,16 @@ export interface Tool {
   lernDesc: string;
   lpOrgDesc: string;
   lpVorbDesc: string;
+  /** Entwurf: wird in der öffentlichen Lizenzübersicht nicht angezeigt */
+  hidden?: boolean;
+  /** Sortierposition in der Übersicht (kleiner = weiter vorne) */
+  sortIndex?: number;
+}
+
+/** Tool-Datensatz aus Firestore inkl. Änderungs-Metadaten. */
+export interface StoredTool extends Tool {
+  updatedAt?: string;
+  updatedBy?: string;
 }
 
 export interface ProcessStep {

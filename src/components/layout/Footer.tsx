@@ -5,7 +5,12 @@ export default function Footer() {
         BBW Winterthur &ndash; Lizenz-Navigator &middot; Basis: Lizenzbestand
         BBW (Stand 2025/2026)
       </p>
-      <p className="mt-1">PIKT-Team BBW</p>
+      <p className="mt-1">
+        PIKT-Team BBW &middot;{" "}
+        <a href="/admin" className="hover:text-bbw-primary hover:underline">
+          Administration
+        </a>
+      </p>
     </footer>
   );
 }
