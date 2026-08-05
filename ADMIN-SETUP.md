@@ -5,8 +5,8 @@ Firestore gespeichert; die Lizenzübersicht liest sie live von dort. Solange Fir
 leer oder nicht erreichbar ist, zeigt die Übersicht automatisch die statischen Daten
 aus [`src/data/tools.ts`](src/data/tools.ts) an – die Seite kann also nicht kaputtgehen.
 
-Einmalige Einrichtung im Firebase-Projekt **`bbw-lizenzen-ffbef`**
-(<https://console.firebase.google.com/project/bbw-lizenzen-ffbef>).
+Einmalige Einrichtung im Firebase-Projekt **`bbw-lizenzen-42`**
+(<https://console.firebase.google.com/project/bbw-lizenzen-42>).
 
 Die Web-Konfiguration liegt in Umgebungsvariablen, nicht im Code: lokal in
 `.env.local`, für die Live-Version in den Vercel-Projekteinstellungen unter
@@ -47,7 +47,7 @@ Die Regeln liegen im Projekt unter [`firestore.rules`](firestore.rules): Tools s
 Entweder per CLI:
 
 ```bash
-npx firebase-tools deploy --only firestore:rules --project bbw-lizenzen-ffbef
+npx firebase-tools deploy --only firestore:rules --project bbw-lizenzen-42
 ```
 
 Oder den Inhalt von `firestore.rules` in der Konsole unter **Firestore Database →

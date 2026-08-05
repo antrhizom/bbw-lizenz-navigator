@@ -3,7 +3,7 @@ import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 
-// Firebase-Web-Konfiguration des Projekts «bbw-lizenzen-ffbef».
+// Firebase-Web-Konfiguration des Projekts «bbw-lizenzen-42».
 // Die Werte kommen aus Umgebungsvariablen: lokal aus .env.local, auf Vercel aus
 // den Projekt-Einstellungen (Settings → Environment Variables). Sie sind zwar
 // keine Geheimnisse – NEXT_PUBLIC_* landet im Browser-Bundle –, gehören aber
