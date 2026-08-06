@@ -2,18 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { ZUGANG_OEFFENTLICH } from "@/lib/feature-flags";
+import { useIstAdmin } from "@/lib/use-admin";
 
 const NAV_ITEMS = [
   { href: "/lizenzen", label: "Lizenzübersicht" },
   { href: "/abklaerung", label: "Abklärung & Anschaffung" },
   { href: "/", label: "Pädagogik / Didaktik" },
-  { href: "/zugang", label: "Zugang & Rollen" },
+  // Noch in Überarbeitung: erst sichtbar, wenn ZUGANG_OEFFENTLICH gesetzt ist.
+  { href: "/zugang", label: "Zugang & Rollen", nurAdmin: !ZUGANG_OEFFENTLICH },
 ];
 
 export default function Header() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { status } = useIstAdmin();
+
+  const navItems = useMemo(
+    () => NAV_ITEMS.filter((item) => !item.nurAdmin || status === "admin"),
+    [status]
+  );
 
   return (
     <header className="bg-gradient-to-br from-bbw-primary-dark to-bbw-primary text-white">
@@ -32,7 +41,7 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex gap-1">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -81,7 +90,7 @@ export default function Header() {
         {/* Mobile Nav */}
         {menuOpen && (
           <nav className="md:hidden mt-4 flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
