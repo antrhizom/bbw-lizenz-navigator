@@ -75,6 +75,32 @@ export default function HomePage() {
             Technologien abläuft.
           </p>
         </div>
+
+        {/* Individuelle Lösungen – Ziel des Verweises aus den Bestandsseiten */}
+        <div
+          id="individuelle-loesungen"
+          className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg scroll-mt-8"
+        >
+          <h3 className="text-sm font-bold text-amber-900 mb-2">
+            Individuelle Lösungen
+          </h3>
+          <div className="text-xs text-amber-900 leading-relaxed space-y-2">
+            <p>
+              Wer über den bestehenden Bestand hinaus eine eigene Lösung sucht,
+              ist an die <strong>Nutzungsrichtlinie IKT der BBW</strong>
+              gebunden. Sie gilt unabhängig davon, ob ein Werkzeug kostenlos,
+              privat beschafft oder nur einmal ausprobiert wird.
+            </p>
+            <p>
+              Das betrifft insbesondere den Umgang mit Personendaten von
+              Lernenden, die Anmeldung mit dem Schulkonto, urheberrechtlich
+              geschützte Inhalte sowie Dienste, die Daten ausserhalb der Schweiz
+              oder der EU verarbeiten. Vor dem Einsatz einer eigenen Lösung im
+              Unterricht ist deshalb eine Rücksprache mit dem PIKT-Team nötig –
+              der Weg dazu ist unter «Abklärung &amp; Anschaffung» beschrieben.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Ziele */}

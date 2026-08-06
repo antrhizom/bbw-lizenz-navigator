@@ -8,6 +8,7 @@ import { generateLicensePdf } from "@/lib/pdf-generator";
 import { trackEvent } from "@/lib/analytics";
 import { fetchPublicTools } from "@/lib/tools-repo";
 import { artVon, REGISTER, registerFuer } from "@/lib/edtech-register";
+import { mailtoLink } from "@/lib/kontakt";
 
 /** Reihenfolge der bekannten Lizenzkategorien; unbekannte kommen hinten dazu. */
 const LICENSE_ORDER = [
@@ -593,6 +594,32 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
           </button>
         </div>
       )}
+
+      {/* Hinweis auf individuelle Lösungen */}
+      <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+        <h3 className="text-sm font-bold text-amber-900 mb-1">
+          Nichts Passendes gefunden?
+        </h3>
+        <p className="text-xs text-amber-900 leading-relaxed">
+          Wer über diesen Bestand hinaus eine eigene Lösung einsetzen möchte, ist
+          an die <strong>Nutzungsrichtlinie IKT der BBW</strong> gebunden – auch
+          bei kostenlosen oder privat beschafften Werkzeugen.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-4 items-center">
+          <Link
+            href="/#individuelle-loesungen"
+            className="text-xs font-semibold text-amber-900 underline hover:no-underline"
+          >
+            Was dabei gilt: Pädagogik / Didaktik
+          </Link>
+          <a
+            href={mailtoLink(`Anfrage individuelle Lösung (${register.label})`)}
+            className="text-xs font-semibold text-amber-900 underline hover:no-underline"
+          >
+            Anfrage an das PIKT-Team
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { ZUGANG_OEFFENTLICH } from "@/lib/feature-flags";
 import { REGISTER, UEBERSICHT } from "@/lib/edtech-register";
 import { useIstAdmin } from "@/lib/use-admin";
+import { KONTAKT, mailtoLink } from "@/lib/kontakt";
 
 const NAV_ITEMS: {
   href: string;
@@ -73,6 +74,16 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
+            <a
+              href={mailtoLink()}
+              title={KONTAKT.erklaerung}
+              className="ml-2 px-4 py-2 rounded-lg text-sm font-bold bg-white text-bbw-primary hover:bg-white/90 transition-colors inline-flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>
+              {KONTAKT.label}
+            </a>
           </nav>
 
           {/* Mobile Burger */}
@@ -124,6 +135,13 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
+            <a
+              href={mailtoLink()}
+              onClick={() => setMenuOpen(false)}
+              className="mt-1 px-4 py-2.5 rounded-lg text-sm font-bold bg-white text-bbw-primary text-center"
+            >
+              {KONTAKT.label} – Anfrage per E-Mail
+            </a>
           </nav>
         )}
       </div>
