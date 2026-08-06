@@ -4,10 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ZUGANG_OEFFENTLICH } from "@/lib/feature-flags";
+import { REGISTER } from "@/lib/edtech-register";
 import { useIstAdmin } from "@/lib/use-admin";
 
-const NAV_ITEMS = [
-  { href: "/lizenzen", label: "Lizenzübersicht" },
+const NAV_ITEMS: {
+  href: string;
+  label: string;
+  titel?: string;
+  nurAdmin?: boolean;
+}[] = [
+  ...REGISTER.map((r) => ({
+    href: r.href,
+    label: r.label,
+    titel: r.erklaerung,
+  })),
   { href: "/abklaerung", label: "Abklärung & Anschaffung" },
   { href: "/", label: "Pädagogik / Didaktik" },
   // Noch in Überarbeitung: erst sichtbar, wenn ZUGANG_OEFFENTLICH gesetzt ist.
@@ -45,6 +55,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
+                title={item.titel}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   pathname === item.href
                     ? "bg-white/20 text-white"
@@ -94,6 +105,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
+                title={item.titel}
                 onClick={() => setMenuOpen(false)}
                 className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                   pathname === item.href

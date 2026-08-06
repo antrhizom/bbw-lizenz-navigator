@@ -4,14 +4,15 @@ import { Tool } from "@/data/types";
 
 export function generateLicensePdf(
   tools: Tool[],
-  activeFilters: string
+  activeFilters: string,
+  titel = "BBW Lizenz-Navigator"
 ): void {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
   // Header
   doc.setFontSize(18);
   doc.setTextColor(0, 150, 69);
-  doc.text("BBW Lizenz-Navigator", 14, 18);
+  doc.text(titel, 14, 18);
 
   doc.setFontSize(10);
   doc.setTextColor(107, 114, 128);
