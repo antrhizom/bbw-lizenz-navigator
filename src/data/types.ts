@@ -1,7 +1,15 @@
+/**
+ * Zugangsart: Anwendungen werden über ein Nutzungsrecht (Lizenz) zugänglich,
+ * Geräte über ihre Verfügbarkeit (Ausleihe, Anzahl Exemplare).
+ */
+export type ToolArt = "anwendung" | "geraet";
+
 export interface Tool {
   id: string;
   name: string;
   typ: string;
+  /** Fehlt der Wert, gilt der Eintrag als Anwendung. */
+  art?: ToolArt;
   ki: boolean;
   kiDetail?: string;
   lernende: boolean;

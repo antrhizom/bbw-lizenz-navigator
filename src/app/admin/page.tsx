@@ -12,14 +12,17 @@ import {
 import { FirebaseError } from "firebase/app";
 import { firebaseKonfiguriert, getAuthClient } from "@/lib/firebase";
 import {
+  Abweichung,
   deleteTool,
   fetchAllTools,
+  findeAbweichungen,
   isAdminEmail,
   saveTool,
   seedFromStatic,
+  syncFromStatic,
   toolExists,
 } from "@/lib/tools-repo";
-import { StoredTool, Tool } from "@/data/types";
+import { StoredTool, Tool, ToolArt } from "@/data/types";
 import { TOOLS } from "@/data/tools";
 
 const LIZENZ_VORSCHLAEGE = [
@@ -48,6 +51,7 @@ interface Draft {
   id: string;
   name: string;
   typ: string;
+  art: ToolArt;
   ki: boolean;
   kiDetail: string;
   lernende: boolean;
@@ -77,6 +81,7 @@ const emptyDraft: Draft = {
   id: "",
   name: "",
   typ: "",
+  art: "anwendung",
   ki: false,
   kiDetail: "",
   lernende: false,
@@ -118,6 +123,7 @@ function toDraft(tool: StoredTool): Draft {
     id: tool.id,
     name: tool.name,
     typ: tool.typ,
+    art: tool.art === "geraet" ? "geraet" : "anwendung",
     ki: tool.ki,
     kiDetail: tool.kiDetail ?? "",
     lernende: tool.lernende,
@@ -156,6 +162,7 @@ function toTool(draft: Draft): Tool {
     id: slugify(draft.id),
     name: trimmed(draft.name),
     typ: trimmed(draft.typ),
+    art: draft.art,
     ki: draft.ki,
     kiDetail: optional(draft.kiDetail),
     lernende: draft.lernende,
@@ -541,6 +548,11 @@ export default function AdminPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [showPasswort, setShowPasswort] = useState(false);
+  const [abgleich, setAbgleich] = useState<{
+    abweichend: Abweichung[];
+    fehlend: string[];
+    ueberzaehlig: string[];
+  } | null>(null);
 
   useEffect(() => {
     if (!firebaseKonfiguriert) {
@@ -692,6 +704,87 @@ export default function AdminPage() {
       });
     } catch (err) {
       setMessage({ kind: "err", text: firestoreFehler("Import", err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** Zeigt, welche Tools von der Projektdatei abweichen. */
+  const handleAbgleichPruefen = async () => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const { abweichend, fehlend, ueberzaehlig } = await findeAbweichungen();
+      setAbgleich({ abweichend, fehlend, ueberzaehlig });
+      if (
+        abweichend.length === 0 &&
+        fehlend.length === 0 &&
+        ueberzaehlig.length === 0
+      ) {
+        setMessage({
+          kind: "ok",
+          text: "Firestore stimmt mit der Projektdatei überein.",
+        });
+      }
+    } catch (err) {
+      setMessage({ kind: "err", text: firestoreFehler("Abgleich", err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** Überschreibt die abweichenden Tools mit dem Inhalt der Projektdatei. */
+  const handleSync = async () => {
+    if (!user?.email || !abgleich) return;
+    const anzahl = abgleich.abweichend.length + abgleich.fehlend.length;
+    if (
+      !window.confirm(
+        `${anzahl} Tool(s) werden mit dem Inhalt der Projektdatei überschrieben. Eigene Änderungen an diesen Einträgen gehen dabei verloren. Fortfahren?`
+      )
+    )
+      return;
+    setBusy(true);
+    try {
+      const ids = await syncFromStatic(user.email);
+      await loadTools();
+      setAbgleich(null);
+      setMessage({
+        kind: "ok",
+        text: `${ids.length} Tool(s) aktualisiert: ${ids.join(", ")}.`,
+      });
+    } catch (err) {
+      setMessage({ kind: "err", text: firestoreFehler("Abgleich", err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** Löscht Tools, die es nur noch in Firestore gibt. */
+  const handleUeberzaehligeLoeschen = async () => {
+    if (!abgleich || abgleich.ueberzaehlig.length === 0) return;
+    const namen = abgleich.ueberzaehlig
+      .map((id) => tools.find((t) => t.id === id)?.name ?? id)
+      .join(", ");
+    if (
+      !window.confirm(
+        `Diese Tools werden unwiderruflich aus Firestore gelöscht und verschwinden aus der Lizenzübersicht:\n\n${namen}\n\nFortfahren?`
+      )
+    )
+      return;
+    setBusy(true);
+    try {
+      for (const id of abgleich.ueberzaehlig) {
+        await deleteTool(id);
+      }
+      const gelöscht = abgleich.ueberzaehlig.length;
+      await loadTools();
+      setAbgleich(null);
+      setMessage({
+        kind: "ok",
+        text: `${gelöscht} Tool(s) gelöscht: ${namen}.`,
+      });
+    } catch (err) {
+      setMessage({ kind: "err", text: firestoreFehler("Löschen", err) });
     } finally {
       setBusy(false);
     }
@@ -975,14 +1068,92 @@ export default function AdminPage() {
           )}
 
           {tools.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-bbw-border">
-              <button
-                onClick={handleSeed}
-                disabled={busy}
-                className="text-xs text-bbw-muted hover:text-bbw-primary hover:underline disabled:opacity-50"
-              >
-                Fehlende Tools aus der Projektdatei nachimportieren
-              </button>
+            <div className="mt-4 pt-4 border-t border-bbw-border space-y-3">
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={handleSeed}
+                  disabled={busy}
+                  className="text-xs text-bbw-muted hover:text-bbw-primary hover:underline disabled:opacity-50"
+                >
+                  Fehlende Tools aus der Projektdatei nachimportieren
+                </button>
+                <button
+                  onClick={handleAbgleichPruefen}
+                  disabled={busy}
+                  className="text-xs text-bbw-muted hover:text-bbw-primary hover:underline disabled:opacity-50"
+                >
+                  Mit Projektdatei abgleichen
+                </button>
+              </div>
+
+              {abgleich && abgleich.ueberzaehlig.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h4 className="text-xs font-bold text-red-900 mb-2">
+                    Nur in Firestore vorhanden
+                  </h4>
+                  <p className="text-[0.65rem] text-red-800 mb-2">
+                    Diese Tools fehlen in der Projektdatei. Entweder wurden sie
+                    dort entfernt (dann hier löschen) oder sie wurden nur über
+                    diese Adminseite angelegt (dann behalten).
+                  </p>
+                  <ul className="text-xs text-red-800 space-y-1 mb-3">
+                    {abgleich.ueberzaehlig.map((id) => (
+                      <li key={id}>
+                        • <strong>{tools.find((t) => t.id === id)?.name ?? id}</strong>{" "}
+                        <span className="text-[0.65rem]">({id})</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={handleUeberzaehligeLoeschen}
+                    disabled={busy}
+                    className="bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-800 disabled:opacity-50 transition-colors"
+                  >
+                    Diese {abgleich.ueberzaehlig.length} Tool(s) löschen
+                  </button>
+                </div>
+              )}
+
+              {abgleich &&
+                (abgleich.abweichend.length > 0 ||
+                  abgleich.fehlend.length > 0) && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <h4 className="text-xs font-bold text-amber-900 mb-2">
+                      Abweichungen zur Projektdatei
+                    </h4>
+                    <ul className="text-xs text-amber-800 space-y-1 mb-3">
+                      {abgleich.abweichend.map((a) => (
+                        <li key={a.id}>
+                          • <strong>{a.name}</strong> – geändert:{" "}
+                          {a.felder.join(", ")}
+                        </li>
+                      ))}
+                      {abgleich.fehlend.map((id) => (
+                        <li key={id}>
+                          • <strong>{id}</strong> – fehlt in Firestore
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={handleSync}
+                        disabled={busy}
+                        className="bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-amber-700 disabled:opacity-50 transition-colors"
+                      >
+                        Aus Projektdatei übernehmen
+                      </button>
+                      <button
+                        onClick={() => setAbgleich(null)}
+                        className="text-xs text-amber-800 hover:underline"
+                      >
+                        Verwerfen
+                      </button>
+                      <span className="text-[0.65rem] text-amber-700">
+                        Überschreibt nur die oben genannten Tools.
+                      </span>
+                    </div>
+                  </div>
+                )}
             </div>
           )}
         </div>
@@ -1045,6 +1216,20 @@ export default function AdminPage() {
                 />
               </Field>
             </div>
+
+            <Field
+              label="Art *"
+              hint="Bestimmt, in welchem Register der Eintrag erscheint: Anwendungen sind über eine Lizenz zugänglich, Geräte über ihre Verfügbarkeit."
+            >
+              <select
+                className={inputClass}
+                value={draft.art}
+                onChange={(e) => patch({ art: e.target.value as ToolArt })}
+              >
+                <option value="anwendung">Anwendung (Lizenz)</option>
+                <option value="geraet">Gerät (Ausleihe)</option>
+              </select>
+            </Field>
 
             <Field
               label="Tooltyp *"

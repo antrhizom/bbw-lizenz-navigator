@@ -20,6 +20,7 @@ export type ToolSource = "firestore" | "static";
 const TOOL_FELDER = [
   "name",
   "typ",
+  "art",
   "ki",
   "kiDetail",
   "lernende",
@@ -57,6 +58,7 @@ function normalize(id: string, raw: Record<string, unknown>): StoredTool {
     id,
     name: str(raw.name, id),
     typ: str(raw.typ),
+    art: raw.art === "geraet" ? "geraet" : "anwendung",
     ki: bool(raw.ki),
     kiDetail: typeof raw.kiDetail === "string" ? raw.kiDetail : undefined,
     lernende: bool(raw.lernende),
@@ -112,6 +114,9 @@ function bySortIndex(a: Tool, b: Tool): number {
 function toFelder(tool: Tool, editorEmail: string): Record<string, unknown> {
   const felder: Record<string, unknown> = {
     ...tool,
+    // Immer explizit schreiben, damit gespeicherte und gelesene Daten
+    // übereinstimmen (normalize setzt fehlende Werte auf "anwendung").
+    art: tool.art ?? "anwendung",
     updatedAt: FsTimestamp.jetztIso(),
     updatedBy: editorEmail,
   };
@@ -192,6 +197,90 @@ export async function seedFromStatic(editorEmail: string): Promise<number> {
   }
 
   return written;
+}
+
+/** Ein Tool, dessen Inhalt in Firestore von der Projektdatei abweicht. */
+export interface Abweichung {
+  id: string;
+  name: string;
+  felder: string[];
+}
+
+/** Felder, die beim Abgleich verglichen werden (ohne Metadaten). */
+const VERGLEICHSFELDER = TOOL_FELDER.filter(
+  (f) => f !== "updatedAt" && f !== "updatedBy"
+);
+
+function gleich(a: unknown, b: unknown): boolean {
+  const norm = (v: unknown) =>
+    v === undefined || v === null || v === "" || v === false ? null : v;
+  const na = norm(a);
+  const nb = norm(b);
+  if (na === null && nb === null) return true;
+  return JSON.stringify(na) === JSON.stringify(nb);
+}
+
+/**
+ * Vergleicht Firestore mit der Projektdatei und listet auf, welche Tools
+ * abweichen – damit vor dem Überschreiben sichtbar ist, was sich ändert.
+ */
+export async function findeAbweichungen(): Promise<{
+  abweichend: Abweichung[];
+  fehlend: string[];
+  ueberzaehlig: string[];
+}> {
+  const vorhanden = new Map(
+    (await fetchAllTools()).map((t) => [t.id, t as unknown as Record<string, unknown>])
+  );
+  const abweichend: Abweichung[] = [];
+  const fehlend: string[] = [];
+
+  for (const tool of TOOLS) {
+    const ist = vorhanden.get(tool.id);
+    if (!ist) {
+      fehlend.push(tool.id);
+      continue;
+    }
+    // art wie beim Schreiben vorbelegen, sonst meldet der Vergleich für jedes
+    // Tool ohne ausdrückliche Angabe eine Abweichung.
+    const soll = { ...tool, art: tool.art ?? "anwendung" } as unknown as Record<
+      string,
+      unknown
+    >;
+    const felder = VERGLEICHSFELDER.filter((f) => !gleich(ist[f], soll[f]));
+    if (felder.length > 0) {
+      abweichend.push({ id: tool.id, name: tool.name, felder });
+    }
+  }
+
+  const inDatei = new Set(TOOLS.map((t) => t.id));
+  const ueberzaehlig = [...vorhanden.keys()].filter((id) => !inDatei.has(id));
+
+  return { abweichend, fehlend, ueberzaehlig };
+}
+
+/**
+ * Überträgt die Tools aus der Projektdatei nach Firestore und überschreibt
+ * abweichende Inhalte. Tools, die es nur in Firestore gibt, bleiben unberührt.
+ * Gibt die IDs der geschriebenen Tools zurück.
+ */
+export async function syncFromStatic(editorEmail: string): Promise<string[]> {
+  const { abweichend, fehlend } = await findeAbweichungen();
+  const ids = [...abweichend.map((a) => a.id), ...fehlend];
+
+  for (const id of ids) {
+    const tool = TOOLS.find((t) => t.id === id);
+    if (!tool) continue;
+    const index = TOOLS.indexOf(tool);
+    await setDocument(
+      TOOLS_COLLECTION,
+      id,
+      toFelder({ ...tool, sortIndex: tool.sortIndex ?? index }, editorEmail),
+      TOOL_FELDER
+    );
+  }
+
+  return ids;
 }
 
 /** Prüft, ob die E-Mail in der Admin-Whitelist (Collection `admins`) steht. */
