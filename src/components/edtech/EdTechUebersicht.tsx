@@ -607,7 +607,7 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
         </p>
         <div className="mt-3 flex flex-wrap gap-4 items-center">
           <Link
-            href="/#individuelle-loesungen"
+            href="/paedagogik#individuelle-loesungen"
             className="text-xs font-semibold text-amber-900 underline hover:no-underline"
           >
             Was dabei gilt: Pädagogik / Didaktik

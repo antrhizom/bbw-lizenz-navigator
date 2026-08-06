@@ -1,6 +1,7 @@
-import EdTechUebersicht from "@/components/edtech/EdTechUebersicht";
+import { permanentRedirect } from "next/navigation";
 
-// Route bleibt /lizenzen, damit bestehende Links und Lesezeichen funktionieren.
-export default function EdTechSoftPage() {
-  return <EdTechUebersicht art="anwendung" />;
+// Frühere Adresse der Lizenzübersicht – bestehende Links und Lesezeichen
+// landen weiterhin am richtigen Ort.
+export default function LizenzenRedirect() {
+  permanentRedirect("/");
 }

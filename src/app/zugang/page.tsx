@@ -448,7 +448,7 @@ export default function ZugangPage() {
                 die Überarbeitung abgeschlossen ist.
               </p>
               <Link
-                href="/lizenzen"
+                href="/"
                 className="inline-block mt-6 text-sm text-bbw-primary font-semibold hover:underline"
               >
                 Zur Lizenzübersicht

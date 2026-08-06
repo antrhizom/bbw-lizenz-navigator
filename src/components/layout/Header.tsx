@@ -25,7 +25,7 @@ const NAV_ITEMS: {
     aktivPfade: REGISTER.map((r) => r.href),
   },
   { href: "/abklaerung", label: "Abklärung & Anschaffung" },
-  { href: "/", label: "Pädagogik / Didaktik" },
+  { href: "/paedagogik", label: "Pädagogik / Didaktik" },
   // Noch in Überarbeitung: erst sichtbar, wenn ZUGANG_OEFFENTLICH gesetzt ist.
   { href: "/zugang", label: "Zugang & Rollen", nurAdmin: !ZUGANG_OEFFENTLICH },
 ];
