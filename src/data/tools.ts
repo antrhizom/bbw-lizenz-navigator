@@ -670,8 +670,10 @@ export const TOOLS: Tool[] = [
       "Quellenangaben und Zitierhilfen für wissenschaftliches Arbeiten",
       "KI-Suchfunktion für relevante Daten",
     ],
-    zugang: "Für alle zugänglich über den Schulzugang via digithek.ch",
-    website: "https://www.digithek.ch/index.php?lang=de",
+    zugang:
+      "Für alle zugänglich über den Schulzugang via digithek.ch – oder direkt über den Link unten (Anmeldung via Bildungsdirektion Kanton Zürich).",
+    website:
+      "https://www.statista.com/sso/login?connection=digithek-bildungsdirektion-des-kantons-zurich-mittelschul-und-berufsbildungsamt",
     anleitungPdfs: [
       { label: "Nutzung Statista", path: "/anleitungen/statista.pdf" },
       { label: "Digitale Medienarchive BBW", path: "/anleitungen/medienarchive.pdf" },
@@ -729,8 +731,9 @@ export const TOOLS: Tool[] = [
       "Artikelexport und Druckfunktion",
       "Ideal für Medienanalysen und aktuelle Themenrecherche",
     ],
-    zugang: "Für alle zugänglich über den Schulzugang via digithek.ch",
-    website: "https://www.digithek.ch/index.php?lang=de",
+    zugang:
+      "Für alle zugänglich über den Schulzugang via digithek.ch – oder direkt über den Link unten.",
+    website: "https://swissdox.nanoo.security/de/home",
     anleitungPdfs: [
       { label: "Anleitung swissdox", path: "/anleitungen/swissdox.pdf" },
       { label: "Digitale Medienarchive BBW", path: "/anleitungen/medienarchive.pdf" },

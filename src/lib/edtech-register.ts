@@ -25,6 +25,14 @@ export interface RegisterDef {
   pdfTitel: string;
 }
 
+/** Beschriftung des gemeinsamen Navigationseintrags über beide Register. */
+export const UEBERSICHT = {
+  label: "Bestand Lerntechnologien",
+  href: "/lizenzen",
+  erklaerung:
+    "Alle Anwendungen und Geräte der Lerntechnologie – unterteilt in EdTech Soft (Zugang über eine Lizenz) und EdTech Hard (Zugang über Verfügbarkeit und Ausleihe).",
+};
+
 export const REGISTER: RegisterDef[] = [
   {
     art: "anwendung",

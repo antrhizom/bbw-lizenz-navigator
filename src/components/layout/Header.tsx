@@ -4,20 +4,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ZUGANG_OEFFENTLICH } from "@/lib/feature-flags";
-import { REGISTER } from "@/lib/edtech-register";
+import { REGISTER, UEBERSICHT } from "@/lib/edtech-register";
 import { useIstAdmin } from "@/lib/use-admin";
 
 const NAV_ITEMS: {
   href: string;
   label: string;
   titel?: string;
+  /** Weitere Pfade, bei denen dieser Eintrag als aktiv gilt. */
+  aktivPfade?: string[];
   nurAdmin?: boolean;
 }[] = [
-  ...REGISTER.map((r) => ({
-    href: r.href,
-    label: r.label,
-    titel: r.erklaerung,
-  })),
+  {
+    href: UEBERSICHT.href,
+    label: UEBERSICHT.label,
+    titel: UEBERSICHT.erklaerung,
+    // Die Unterscheidung Soft/Hard erfolgt über die Register auf der Seite –
+    // der Menüeintrag bleibt einer, gilt aber für beide Routen als aktiv.
+    aktivPfade: REGISTER.map((r) => r.href),
+  },
   { href: "/abklaerung", label: "Abklärung & Anschaffung" },
   { href: "/", label: "Pädagogik / Didaktik" },
   // Noch in Überarbeitung: erst sichtbar, wenn ZUGANG_OEFFENTLICH gesetzt ist.
@@ -33,6 +38,9 @@ export default function Header() {
     () => NAV_ITEMS.filter((item) => !item.nurAdmin || status === "admin"),
     [status]
   );
+
+  const istAktiv = (item: (typeof NAV_ITEMS)[number]) =>
+    item.aktivPfade ? item.aktivPfade.includes(pathname) : pathname === item.href;
 
   return (
     <header className="bg-gradient-to-br from-bbw-primary-dark to-bbw-primary text-white">
@@ -57,7 +65,7 @@ export default function Header() {
                 href={item.href}
                 title={item.titel}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  pathname === item.href
+                  istAktiv(item)
                     ? "bg-white/20 text-white"
                     : "text-white/75 hover:bg-white/10 hover:text-white"
                 }`}
@@ -108,7 +116,7 @@ export default function Header() {
                 title={item.titel}
                 onClick={() => setMenuOpen(false)}
                 className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                  pathname === item.href
+                  istAktiv(item)
                     ? "bg-white/20 text-white"
                     : "text-white/75 hover:bg-white/10 hover:text-white"
                 }`}
