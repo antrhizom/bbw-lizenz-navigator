@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Startseite" },
-  { href: "/abklaerung", label: "Abklärung & Anschaffung" },
   { href: "/lizenzen", label: "Lizenzübersicht" },
+  { href: "/abklaerung", label: "Abklärung & Anschaffung" },
+  { href: "/", label: "Pädagogik / Didaktik" },
   { href: "/zugang", label: "Zugang & Rollen" },
 ];
 
