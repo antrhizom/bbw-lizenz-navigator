@@ -64,6 +64,7 @@ interface Draft {
   zugang: string;
   einzellizenzInfo: string;
   website: string;
+  links: { label: string; url: string }[];
   anleitungPdfs: { label: string; path: string }[];
   beherrschen: boolean;
   behDesc: string;
@@ -94,6 +95,7 @@ const emptyDraft: Draft = {
   zugang: "",
   einzellizenzInfo: "",
   website: "",
+  links: [],
   anleitungPdfs: [],
   beherrschen: false,
   behDesc: "",
@@ -136,6 +138,7 @@ function toDraft(tool: StoredTool): Draft {
     zugang: tool.zugang,
     einzellizenzInfo: tool.einzellizenzInfo ?? "",
     website: tool.website ?? "",
+    links: (tool.links ?? []).map((l) => ({ ...l })),
     anleitungPdfs: (tool.anleitungPdfs ?? []).map((p) => ({ ...p })),
     beherrschen: tool.beherrschen,
     behDesc: tool.behDesc,
@@ -156,6 +159,9 @@ function toTool(draft: Draft): Tool {
   const pdfs = draft.anleitungPdfs
     .map((p) => ({ label: trimmed(p.label), path: trimmed(p.path) }))
     .filter((p) => p.label && p.path);
+  const linkListe = draft.links
+    .map((l) => ({ label: trimmed(l.label), url: trimmed(l.url) }))
+    .filter((l) => l.label && l.url);
   const sortIndex = Number.parseInt(draft.sortIndex, 10);
 
   return {
@@ -178,6 +184,7 @@ function toTool(draft: Draft): Tool {
     zugang: trimmed(draft.zugang),
     einzellizenzInfo: optional(draft.einzellizenzInfo),
     website: optional(draft.website),
+    links: linkListe.length > 0 ? linkListe : undefined,
     anleitungPdfs: pdfs.length > 0 ? pdfs : undefined,
     beherrschen: draft.beherrschen,
     lernen: draft.lernen,
@@ -200,6 +207,14 @@ function validate(draft: Draft): string[] {
   if (!draft.typ.trim()) errors.push("Tooltyp ist erforderlich.");
   if (draft.website.trim() && !/^https?:\/\//.test(draft.website.trim()))
     errors.push("Website muss mit http:// oder https:// beginnen.");
+  draft.links.forEach((l, i) => {
+    if (l.url.trim() && !l.label.trim())
+      errors.push(`Link ${i + 1}: Bezeichnung fehlt.`);
+    if (l.label.trim() && !l.url.trim())
+      errors.push(`Link ${i + 1}: Adresse fehlt.`);
+    if (l.url.trim() && !/^https?:\/\//.test(l.url.trim()))
+      errors.push(`Link ${i + 1}: Adresse muss mit http:// oder https:// beginnen.`);
+  });
   draft.anleitungPdfs.forEach((p, i) => {
     if (p.path.trim() && !p.label.trim())
       errors.push(`Anleitung ${i + 1}: Bezeichnung fehlt.`);
@@ -1285,7 +1300,10 @@ export default function AdminPage() {
               />
             </Field>
 
-            <Field label="Website">
+            <Field
+              label="Website"
+              hint="Ein einzelner Link. Gibt es mehrere Zugangswege, stattdessen unten beschriftete Links erfassen – diese haben Vorrang."
+            >
               <input
                 className={inputClass}
                 value={draft.website}
@@ -1293,6 +1311,61 @@ export default function AdminPage() {
                 placeholder="https://…"
               />
             </Field>
+
+            <div>
+              <span className="block text-xs font-semibold text-bbw-text mb-1">
+                Beschriftete Links
+              </span>
+              <p className="text-[0.65rem] text-bbw-muted mb-2">
+                Für mehrere Zugangswege, z. B. «Direkt-Link» und
+                «Digithek-Link». Sind hier Links erfasst, wird das Feld Website
+                nicht angezeigt.
+              </p>
+              <div className="space-y-2">
+                {draft.links.map((l, i) => (
+                  <div key={i} className="flex flex-wrap gap-2 items-start">
+                    <input
+                      className={`${inputClass} flex-1 min-w-[9rem]`}
+                      value={l.label}
+                      onChange={(e) => {
+                        const next = [...draft.links];
+                        next[i] = { ...next[i], label: e.target.value };
+                        patch({ links: next });
+                      }}
+                      placeholder="Bezeichnung (z. B. Direkt-Link)"
+                    />
+                    <input
+                      className={`${inputClass} flex-[2] min-w-[12rem]`}
+                      value={l.url}
+                      onChange={(e) => {
+                        const next = [...draft.links];
+                        next[i] = { ...next[i], url: e.target.value };
+                        patch({ links: next });
+                      }}
+                      placeholder="https://…"
+                    />
+                    <button
+                      onClick={() =>
+                        patch({
+                          links: draft.links.filter((_, idx) => idx !== i),
+                        })
+                      }
+                      className="text-xs text-red-700 font-semibold hover:underline py-2"
+                    >
+                      Entfernen
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() =>
+                  patch({ links: [...draft.links, { label: "", url: "" }] })
+                }
+                className="mt-2 text-xs text-bbw-primary font-semibold hover:underline"
+              >
+                + Link hinzufügen
+              </button>
+            </div>
           </Section>
 
           <Section title="Lizenz & Zugang">

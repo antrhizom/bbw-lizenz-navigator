@@ -26,6 +26,12 @@ export interface Tool {
   einzellizenzInfo?: string;
   /** Website-Link des Tools */
   website?: string;
+  /**
+   * Mehrere beschriftete Links, wenn es verschiedene Zugangswege gibt
+   * (z. B. «Direkt-Link» und «Digithek-Link»). Sind Links gesetzt, werden sie
+   * anstelle des einzelnen Website-Links angezeigt.
+   */
+  links?: { label: string; url: string }[];
   /** PDF-Anleitungen (mehrere möglich) */
   anleitungPdfs?: { label: string; path: string }[];
   /** @deprecated Einzelne PDF-Anleitung – nutze anleitungPdfs */

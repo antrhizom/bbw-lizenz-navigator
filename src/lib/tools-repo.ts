@@ -33,6 +33,7 @@ const TOOL_FELDER = [
   "zugang",
   "einzellizenzInfo",
   "website",
+  "links",
   "anleitungPdfs",
   "beherrschen",
   "lernen",
@@ -77,6 +78,17 @@ function normalize(id: string, raw: Record<string, unknown>): StoredTool {
         ? raw.einzellizenzInfo
         : undefined,
     website: typeof raw.website === "string" ? raw.website : undefined,
+    links: Array.isArray(raw.links)
+      ? (raw.links as unknown[])
+          .filter(
+            (l): l is { label: string; url: string } =>
+              !!l &&
+              typeof l === "object" &&
+              typeof (l as { label?: unknown }).label === "string" &&
+              typeof (l as { url?: unknown }).url === "string"
+          )
+          .map((l) => ({ label: l.label, url: l.url }))
+      : undefined,
     anleitungPdfs: Array.isArray(raw.anleitungPdfs)
       ? (raw.anleitungPdfs as unknown[])
           .filter(
