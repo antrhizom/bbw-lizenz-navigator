@@ -9,6 +9,7 @@ import { trackEvent } from "@/lib/analytics";
 import { fetchPublicTools } from "@/lib/tools-repo";
 import { artVon, REGISTER, registerFuer } from "@/lib/edtech-register";
 import { mailtoLink } from "@/lib/kontakt";
+import { NRL_IKT } from "@/lib/dokumente";
 
 /** Reihenfolge der bekannten Lizenzkategorien; unbekannte kommen hinten dazu. */
 const LICENSE_ORDER = [
@@ -612,6 +613,14 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
           >
             Was dabei gilt: Pädagogik / Didaktik
           </Link>
+          <a
+            href={NRL_IKT.pfad}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-amber-900 underline hover:no-underline"
+          >
+            {NRL_IKT.titel} (PDF)
+          </a>
           <a
             href={mailtoLink(`Anfrage individuelle Lösung (${register.label})`)}
             className="text-xs font-semibold text-amber-900 underline hover:no-underline"

@@ -568,6 +568,16 @@ export default function AdminPage() {
   const loadTools = useCallback(async () => {
     try {
       setTools(await fetchAllTools());
+      // Abweichungen gleich mitprüfen: sonst muss man erst daran denken, den
+      // Abgleich anzustossen, und Änderungen in der Projektdatei bleiben
+      // unbemerkt liegen. Fehler hier sind nicht kritisch – die Tool-Liste
+      // steht ja schon.
+      try {
+        const { abweichend, fehlend, ueberzaehlig } = await findeAbweichungen();
+        setAbgleich({ abweichend, fehlend, ueberzaehlig });
+      } catch {
+        setAbgleich(null);
+      }
     } catch (err) {
       setMessage({ kind: "err", text: firestoreFehler("Laden", err) });
     }
