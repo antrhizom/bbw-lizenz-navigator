@@ -1069,20 +1069,34 @@ export default function AdminPage() {
 
           {tools.length > 0 && (
             <div className="mt-4 pt-4 border-t border-bbw-border space-y-3">
+              <div>
+                <h4 className="text-xs font-bold text-bbw-text mb-1">
+                  Projektdatei
+                </h4>
+                <p className="text-[0.65rem] text-bbw-muted max-w-2xl">
+                  Die Projektdatei ist die im Programmcode hinterlegte
+                  Tool-Liste. Der Abgleich vergleicht sie mit der Datenbank und
+                  zeigt die Unterschiede an – geändert wird erst, wenn du die
+                  Übernahme anschliessend bestätigst.
+                </p>
+              </div>
+
               <div className="flex flex-wrap gap-4">
-                <button
-                  onClick={handleSeed}
-                  disabled={busy}
-                  className="text-xs text-bbw-muted hover:text-bbw-primary hover:underline disabled:opacity-50"
-                >
-                  Fehlende Tools aus der Projektdatei nachimportieren
-                </button>
                 <button
                   onClick={handleAbgleichPruefen}
                   disabled={busy}
-                  className="text-xs text-bbw-muted hover:text-bbw-primary hover:underline disabled:opacity-50"
+                  title="Vergleicht die Datenbank mit der Projektdatei und listet auf, welche Tools abweichen, welche fehlen und welche es nur in der Datenbank gibt. Es wird dabei noch nichts geändert – die Listen erscheinen unterhalb dieser Zeile."
+                  className="bg-white border border-bbw-border px-3 py-1.5 rounded-lg text-xs font-semibold text-bbw-text hover:border-bbw-primary hover:text-bbw-primary disabled:opacity-50 transition-colors"
                 >
                   Mit Projektdatei abgleichen
+                </button>
+                <button
+                  onClick={handleSeed}
+                  disabled={busy}
+                  title="Legt nur diejenigen Tools an, die in der Projektdatei stehen und in der Datenbank fehlen. Bereits vorhandene Einträge bleiben unverändert – für Änderungen an bestehenden Tools den Abgleich verwenden."
+                  className="text-xs text-bbw-muted hover:text-bbw-primary hover:underline disabled:opacity-50"
+                >
+                  Nur fehlende Tools nachimportieren
                 </button>
               </div>
 
@@ -1107,6 +1121,7 @@ export default function AdminPage() {
                   <button
                     onClick={handleUeberzaehligeLoeschen}
                     disabled={busy}
+                    title="Löscht die oben genannten Tools unwiderruflich aus der Datenbank. Sie verschwinden damit auch aus der öffentlichen Übersicht. Vorher erscheint eine Rückfrage mit den Namen."
                     className="bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-800 disabled:opacity-50 transition-colors"
                   >
                     Diese {abgleich.ueberzaehlig.length} Tool(s) löschen
@@ -1138,12 +1153,14 @@ export default function AdminPage() {
                       <button
                         onClick={handleSync}
                         disabled={busy}
+                        title="Überschreibt die oben genannten Tools mit dem Inhalt der Projektdatei. Nur diese Einträge werden angefasst; eigene Änderungen daran gehen verloren. Vorher erscheint eine Rückfrage."
                         className="bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-amber-700 disabled:opacity-50 transition-colors"
                       >
                         Aus Projektdatei übernehmen
                       </button>
                       <button
                         onClick={() => setAbgleich(null)}
+                        title="Schliesst diese Liste, ohne etwas zu ändern."
                         className="text-xs text-amber-800 hover:underline"
                       >
                         Verwerfen
