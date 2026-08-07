@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!--
+    Tab-Symbol des Lizenz-Navigators: Schlüssel auf BBW-Grün.
+    Der Schlüssel steht in der App für «Zugang» und bleibt auch bei 16 px
+    erkennbar – der Zürcher Löwe ist als feine Strichzeichnung zu detailliert.
+  -->
+  <rect width="64" height="64" rx="12" fill="#009645" />
+  <g fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="24" cy="24" r="9" />
+    <path d="M30.5 30.5 48 48" />
+    <path d="M38 38 33 43" />
+    <path d="M43 43 38 48" />
+  </g>
+</svg>
