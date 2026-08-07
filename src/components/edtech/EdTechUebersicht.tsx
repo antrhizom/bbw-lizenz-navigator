@@ -622,9 +622,10 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
           Nichts Passendes gefunden?
         </h3>
         <p className="text-xs text-amber-900 leading-relaxed">
-          Wer über diesen Bestand hinaus eine eigene Lösung einsetzen möchte, ist
-          an die <strong>Nutzungsrichtlinie IKT der BBW</strong> gebunden – auch
-          bei kostenlosen oder privat beschafften Werkzeugen.
+          Eigene Lösungen sind möglich. Zu beachten sind die vier Punkte der{" "}
+          <strong>Nutzungsrichtlinie IKT</strong>: Schulkonto nur für
+          Schulangebote, Registrierung freiwillig, keine Personendaten, im
+          Zweifel kurz beim PIKT-Team nachfragen.
         </p>
         <div className="mt-3 flex flex-wrap gap-4 items-center">
           <Link

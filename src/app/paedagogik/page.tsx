@@ -87,83 +87,39 @@ export default function PaedagogikPage() {
           </h3>
           <div className="text-xs text-amber-900 leading-relaxed space-y-3">
             <p>
-              Wer über den bestehenden Bestand hinaus eine eigene Lösung
-              einsetzen möchte, ist an die{" "}
-              <strong>
-                Nutzungsrichtlinie Informations- und Kommunikations-Technologie
-                (NRL IKT, Version 04.2026)
-              </strong>{" "}
-              gebunden – unabhängig davon, ob ein Werkzeug kostenlos, privat
-              beschafft oder nur einmal ausprobiert wird. Für Lizenzen und
-              Zugänge sind vor allem diese Punkte einschlägig:
+              Lerntechnologien ausserhalb des Schulangebots sind möglich. Dabei
+              gilt die <strong>Nutzungsrichtlinie IKT (NRL IKT, 04.2026)</strong>
+              , im Wesentlichen vier Punkte:
             </p>
 
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
               <li className="flex gap-2">
-                <span className="shrink-0 font-bold">Schul-Login:</span>
+                <span className="shrink-0 font-bold">Login:</span>
                 <span>
-                  «Für Lerntechnologien, die nicht im Schulangebot enthalten
-                  sind, dürfen nicht die Logindaten der Schule benutzt werden.»{" "}
-                  <em>(Ziff. 4.3)</em>
+                  Das Schulkonto nur für Angebote der Schule verwenden.
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="shrink-0 font-bold">Rücksprache:</span>
+                <span className="shrink-0 font-bold">Freiwillig:</span>
                 <span>
-                  Bestehen keine offiziellen Vorgaben, welche Logindaten bei
-                  einer Registration benutzt werden können, «ist das
-                  didaktisch-pädagogische IKT PIKT-Team zu konsultieren».{" "}
-                  <em>(Ziff. 4.3)</em>
+                  Eine Registrierung lässt sich nicht verlangen – wer nicht
+                  möchte, braucht eine Alternative.
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="shrink-0 font-bold">
-                  Kein Zwang zur Registrierung:
-                </span>
+                <span className="shrink-0 font-bold">Daten:</span>
                 <span>
-                  Lernende dürfen <strong>nicht</strong> dazu verpflichtet
-                  werden, sich mit privaten Daten oder einem privaten Konto
-                  anzumelden. «Die Registrierung zur Nutzung generativer KI-Tools
-                  und digitaler Lerntechnologien erfolgt freiwillig; eine
-                  Registrierung darf nicht erzwungen werden.» Die Angabe
-                  persönlicher Daten bei der Registrierung erfolgt
-                  «ausschliesslich auf freiwilliger Basis». <em>(Ziff. 4.3)</em>{" "}
-                  Praktisch heisst das: für Lernende, die eine Registrierung
-                  ablehnen, ist eine gleichwertige Alternative vorzusehen.
+                  Keine Personendaten eingeben; vorher kurz anschauen, wo die
+                  Daten liegen und ob sie löschbar sind.
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="shrink-0 font-bold">Aufklärung:</span>
+                <span className="shrink-0 font-bold">Unsicher?</span>
                 <span>
-                  Nutzende sind über Zweck und Anwendung generativer KI im
-                  jeweiligen Kontext zu informieren – ausdrücklich auch die
-                  Lernenden im Lernkontext. <em>(Ziff. 4.3)</em>
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 font-bold">Personendaten:</span>
-                <span>
-                  In generative KI und digitale Lerntechnologien dürfen keine
-                  personenbezogenen Daten eingegeben werden – auch anonymisierte
-                  Daten lassen Rückschlüsse zu. <em>(Ziff. 4.3)</em>
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 font-bold">Prüfpflicht:</span>
-                <span>
-                  Anwendungen im Unterricht sind auf Speicherort,
-                  Aufbewahrungsdauer, endgültige Löschbarkeit und Verschlüsselung
-                  zu prüfen; im Zweifelsfall an den IKT-Support der BBW.{" "}
-                  <em>(Ziff. 4.2 a)</em>
+                  Kurz beim PIKT-Team nachfragen – Support-Knopf oben.
                 </span>
               </li>
             </ul>
-
-            <p>
-              Der Weg für eine Abklärung oder Anschaffung ist unter «Abklärung
-              &amp; Anschaffung» beschrieben; Anfragen gehen über den
-              Support-Knopf oben an das PIKT-Team.
-            </p>
 
             <a
               href={NRL_IKT.pfad}
