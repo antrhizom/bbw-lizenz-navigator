@@ -8,15 +8,27 @@ import { getAuth, Auth } from "firebase/auth";
 // keine Geheimnisse – NEXT_PUBLIC_* landet im Browser-Bundle –, gehören aber
 // nicht ins öffentliche Repository. Der Schutz der Daten erfolgt über die
 // Firestore-Regeln (siehe firestore.rules) und die Admin-Whitelist.
+/**
+ * Umgebungswerte bereinigen: beim Einfügen in Vercel gerät leicht ein
+ * Zeilenumbruch ans Ende. In URLs entfernt ihn der Browser stillschweigend, in
+ * JSON-Nutzdaten jedoch nicht – dort führte er zu
+ * «Invalid project ID(bbw-lizenzen-42\n)» und liess das Zählen scheitern.
+ */
+const env = (wert: string | undefined): string | undefined => wert?.trim();
+
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: env(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
+  authDomain: env(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
+  projectId: env(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+  storageBucket: env(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET),
+  messagingSenderId: env(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID),
+  appId: env(process.env.NEXT_PUBLIC_FIREBASE_APP_ID),
+  measurementId: env(process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID),
 };
+
+/** Bereinigte Werte für die REST-Zugriffe – eine gemeinsame Quelle. */
+export const FIREBASE_PROJECT_ID = firebaseConfig.projectId;
+export const FIREBASE_API_KEY = firebaseConfig.apiKey;
 
 /** Ist die Firebase-Konfiguration überhaupt vorhanden? */
 export const firebaseKonfiguriert = Boolean(

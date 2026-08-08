@@ -13,10 +13,16 @@
  * (`request.auth.token.email`).
  */
 
-import { getAuthClient } from "./firebase";
+import {
+  FIREBASE_API_KEY,
+  FIREBASE_PROJECT_ID,
+  getAuthClient,
+} from "./firebase";
 
-const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+// Bereinigte Werte aus firebase.ts – ein Zeilenumbruch aus den
+// Umgebungsvariablen würde sonst in den JSON-Nutzdaten landen.
+const PROJECT_ID = FIREBASE_PROJECT_ID;
+const API_KEY = FIREBASE_API_KEY;
 
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 

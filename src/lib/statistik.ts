@@ -26,14 +26,25 @@ function monatsId(datum = new Date()): string {
   return `${datum.getFullYear()}-${String(datum.getMonth() + 1).padStart(2, "0")}`;
 }
 
+/** Damit eine dauerhafte Fehlkonfiguration nicht die Konsole flutet. */
+let fehlerGemeldet = false;
+
 /**
- * Zählt ein Ereignis. Fehler werden bewusst verschluckt – eine fehlgeschlagene
- * Statistik darf die Bedienung der Seite nie stören.
+ * Zählt ein Ereignis. Fehler stören die Bedienung nie, werden aber einmal pro
+ * Sitzung in der Konsole gemeldet: ein stilles Scheitern hatte schon einmal
+ * dazu geführt, dass wochenlang nichts gezählt wurde, ohne dass es auffiel.
  */
 export function zaehle(kategorie: Kategorie, wert: string): void {
   if (typeof window === "undefined" || !wert) return;
   const pfad = "zaehler.`" + schluessel(kategorie, wert) + "`";
-  void incrementFields(STATISTIK_COLLECTION, monatsId(), [pfad]).catch(() => {});
+  void incrementFields(STATISTIK_COLLECTION, monatsId(), [pfad]).catch(
+    (err) => {
+      if (!fehlerGemeldet) {
+        fehlerGemeldet = true;
+        console.warn("Nutzungsstatistik konnte nicht gezählt werden:", err);
+      }
+    }
+  );
 }
 
 export interface MonatsStatistik {
