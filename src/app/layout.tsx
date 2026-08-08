@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { AnalyticsProvider } from "@/components/layout/AnalyticsProvider";
+import { SeitenZaehler } from "@/components/layout/SeitenZaehler";
 
 export const metadata: Metadata = {
   title: "Lizenz-Navigator | BBW Winterthur",
@@ -19,6 +20,7 @@ export default function RootLayout({
     <html lang="de">
       <body className="antialiased min-h-screen flex flex-col">
         <AnalyticsProvider />
+        <SeitenZaehler />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

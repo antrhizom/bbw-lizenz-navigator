@@ -7,6 +7,7 @@ import { ZUGANG_OEFFENTLICH } from "@/lib/feature-flags";
 import { REGISTER, UEBERSICHT } from "@/lib/edtech-register";
 import { useIstAdmin } from "@/lib/use-admin";
 import { KONTAKT, mailtoLink } from "@/lib/kontakt";
+import { zaehle } from "@/lib/statistik";
 
 const NAV_ITEMS: {
   href: string;
@@ -77,6 +78,7 @@ export default function Header() {
             <a
               href={mailtoLink()}
               title={KONTAKT.erklaerung}
+              onClick={() => zaehle("funktion", "support-knopf")}
               className="ml-2 px-4 py-2 rounded-lg text-sm font-bold bg-white text-bbw-primary hover:bg-white/90 transition-colors inline-flex items-center gap-1.5"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -137,7 +139,10 @@ export default function Header() {
             ))}
             <a
               href={mailtoLink()}
-              onClick={() => setMenuOpen(false)}
+              onClick={() => {
+                zaehle("funktion", "support-knopf");
+                setMenuOpen(false);
+              }}
               className="mt-1 px-4 py-2.5 rounded-lg text-sm font-bold bg-white text-bbw-primary text-center"
             >
               {KONTAKT.label} – Anfrage per E-Mail

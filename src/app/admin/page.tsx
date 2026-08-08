@@ -24,6 +24,7 @@ import {
 } from "@/lib/tools-repo";
 import { StoredTool, Tool, ToolArt } from "@/data/types";
 import { TOOLS } from "@/data/tools";
+import { Dashboard } from "@/components/admin/Dashboard";
 
 const LIZENZ_VORSCHLAEGE = [
   "Kantonslizenz",
@@ -967,6 +968,8 @@ export default function AdminPage() {
           {message.text}
         </div>
       )}
+
+      <Dashboard tools={tools} />
 
       {tools.length === 0 && (
         <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-5">

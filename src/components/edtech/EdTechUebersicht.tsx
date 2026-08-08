@@ -10,6 +10,7 @@ import { fetchPublicTools } from "@/lib/tools-repo";
 import { artVon, REGISTER, registerFuer } from "@/lib/edtech-register";
 import { mailtoLink } from "@/lib/kontakt";
 import { NRL_IKT } from "@/lib/dokumente";
+import { zaehle } from "@/lib/statistik";
 
 /** Reihenfolge der bekannten Lizenzkategorien; unbekannte kommen hinten dazu. */
 const LICENSE_ORDER = [
@@ -185,6 +186,7 @@ function ToolCard({ tool, lizenzLabel }: { tool: Tool; lizenzLabel: string }) {
               target="_blank"
               rel="noopener noreferrer"
               title={l.url}
+              onClick={() => zaehle("tool", `${tool.id}:link`)}
               className="inline-flex items-center gap-1 text-[0.65rem] px-2 py-1 rounded-md bg-bbw-primary-light text-bbw-primary font-semibold hover:bg-bbw-primary hover:text-white transition-colors"
             >
               <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -201,6 +203,7 @@ function ToolCard({ tool, lizenzLabel }: { tool: Tool; lizenzLabel: string }) {
               href={tool.website}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => zaehle("tool", `${tool.id}:link`)}
               className="inline-flex items-center gap-1 text-[0.68rem] text-bbw-primary font-semibold hover:underline"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -221,6 +224,7 @@ function ToolCard({ tool, lizenzLabel }: { tool: Tool; lizenzLabel: string }) {
               href={pdf.path}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => zaehle("tool", `${tool.id}:anleitung`)}
               className="flex items-center gap-1.5 text-[0.65rem] px-2 py-1 rounded-md bg-red-50 text-red-700 font-medium hover:bg-red-100 transition-colors"
             >
               <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -236,7 +240,10 @@ function ToolCard({ tool, lizenzLabel }: { tool: Tool; lizenzLabel: string }) {
       {tool.features.length > 0 && (
         <div className="mt-2 pt-2 border-t border-bbw-border">
           <button
-            onClick={() => setExpanded(!expanded)}
+            onClick={() => {
+              if (!expanded) zaehle("tool", `${tool.id}:features`);
+              setExpanded(!expanded);
+            }}
             className="text-[0.68rem] text-bbw-primary font-semibold flex items-center gap-1 hover:underline"
           >
             <svg
@@ -316,6 +323,7 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
   ) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     if (key !== "search") {
+      zaehle("funktion", `filter:${String(key)}`);
       trackEvent("filter_applied", {
         filter_type: key,
         filter_value: String(value ?? "alle"),
@@ -384,6 +392,7 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
 
   const handlePdfExport = () => {
     generateLicensePdf(filteredTools, activeFilterLabels.join(", "), register.pdfTitel);
+    zaehle("funktion", `pdf-export:${register.label}`);
     trackEvent("pdf_exported", {
       register: register.label,
       tools_count: filteredTools.length,
@@ -392,6 +401,8 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
   };
 
   const handleSearchChange = (value: string) => {
+    // Nur den Beginn einer Suche zählen, nicht jeden Tastendruck.
+    if (!filters.search && value) zaehle("funktion", "suche");
     updateFilter("search", value);
   };
 
@@ -407,6 +418,7 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
                 key={r.art}
                 href={r.href}
                 title={r.erklaerung}
+                onClick={() => zaehle("funktion", `register:${r.label}`)}
                 aria-current={aktiv ? "page" : undefined}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${
                   aktiv
@@ -658,12 +670,14 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
             href={NRL_IKT.pfad}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => zaehle("funktion", "nutzungsrichtlinie-geoeffnet")}
             className="text-xs font-semibold text-amber-900 underline hover:no-underline"
           >
             {NRL_IKT.titel} (PDF)
           </a>
           <a
             href={mailtoLink(`Anfrage individuelle Lösung (${register.label})`)}
+            onClick={() => zaehle("funktion", "anfrage-individuelle-loesung")}
             className="text-xs font-semibold text-amber-900 underline hover:no-underline"
           >
             Anfrage an das PIKT-Team

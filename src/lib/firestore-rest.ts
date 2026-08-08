@@ -261,3 +261,47 @@ export async function deleteDocument(
     method: "DELETE",
   });
 }
+
+/**
+ * Zählerfelder atomar erhöhen – für die Nutzungsstatistik.
+ *
+ * Nutzt `:commit` mit `updateTransforms`: der leere `updateMask` ändert nichts
+ * am Dokument, legt es aber an, falls es fehlt; die Transformationen erhöhen
+ * anschliessend die Zähler. Damit gehen gleichzeitige Aufrufe nicht verloren.
+ */
+export async function incrementFields(
+  collection: string,
+  id: string,
+  fieldPaths: string[]
+): Promise<void> {
+  if (!PROJECT_ID || fieldPaths.length === 0) return;
+
+  const name = `projects/${PROJECT_ID}/databases/(default)/documents/${collection}/${id}`;
+  const koerper = {
+    writes: [
+      {
+        update: { name, fields: {} },
+        updateMask: { fieldPaths: [] },
+        updateTransforms: fieldPaths.map((fieldPath) => ({
+          fieldPath,
+          increment: { integerValue: "1" },
+        })),
+      },
+    ],
+  };
+
+  const url =
+    `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:commit` +
+    (API_KEY ? `?key=${encodeURIComponent(API_KEY)}` : "");
+
+  const antwort = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(koerper),
+  });
+
+  if (!antwort.ok) {
+    const text = await antwort.text();
+    throw new FirestoreRestError("unknown", `Zählen fehlgeschlagen: ${text}`);
+  }
+}
