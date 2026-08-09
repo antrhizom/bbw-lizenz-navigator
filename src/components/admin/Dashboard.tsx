@@ -57,11 +57,37 @@ const SEITEN_NAMEN: Record<string, string> = {
   "/zugang": "Zugang & Rollen",
 };
 
-const AKTION_NAMEN: Record<string, string> = {
-  features: "Features aufgeklappt",
-  link: "Link geöffnet",
-  anleitung: "Anleitung geöffnet",
+/** Rohe Funktionsschlüssel in lesbare Bezeichnungen übersetzen. */
+const FILTER_NAMEN: Record<string, string> = {
+  lizenzKategorie: "Lizenz / Verfügbarkeit",
+  ki: "KI",
+  lernende: "Lernende",
+  lp: "Lehrpersonen",
+  toolTyp: "Tooltyp",
+  search: "Suchfeld",
 };
+
+function funktionsName(schluessel: string): string {
+  const [art, rest] = schluessel.split(/:(.+)/);
+  switch (art) {
+    case "pdf-export":
+      return `PDF-Export (${rest})`;
+    case "filter":
+      return `Filter: ${FILTER_NAMEN[rest] ?? rest}`;
+    case "register":
+      return `Register gewechselt: ${rest}`;
+    case "suche":
+      return "Suche benutzt";
+    case "support-knopf":
+      return "Support-Knopf";
+    case "anfrage-individuelle-loesung":
+      return "Anfrage «individuelle Lösung»";
+    case "nutzungsrichtlinie-geoeffnet":
+      return "Nutzungsrichtlinie geöffnet";
+    default:
+      return schluessel;
+  }
+}
 
 export function Dashboard({ tools }: { tools: StoredTool[] }) {
   const [monate, setMonate] = useState<MonatsStatistik[] | null>(null);
@@ -92,35 +118,49 @@ export function Dashboard({ tools }: { tools: StoredTool[] }) {
     [zaehler]
   );
 
-  // Tool-Schlüssel sind «toolId:aktion» – für die Rangliste pro Tool summieren.
-  const toolSummen = useMemo(() => {
-    const summe: Record<string, number> = {};
+  /**
+   * Tool-Schlüssel sind «toolId:aktion». Eine Zeile pro Tool mit einer Spalte
+   * je Aktion – so ist sichtbar, ob ein Tool nur angeschaut oder auch geöffnet
+   * wurde. Die frühere Trennung in zwei Listen liess genau das offen.
+   */
+  const toolZeilen = useMemo(() => {
+    const proTool: Record<
+      string,
+      { features: number; link: number; anleitung: number; total: number }
+    > = {};
     for (const e of nachKategorie(zaehler, "tool")) {
-      const id = e.wert.split(":")[0];
-      summe[id] = (summe[id] ?? 0) + e.anzahl;
+      const [id, aktion] = e.wert.split(/:(.+)/);
+      const zeile = (proTool[id] ??= {
+        features: 0,
+        link: 0,
+        anleitung: 0,
+        total: 0,
+      });
+      if (aktion === "features") zeile.features += e.anzahl;
+      else if (aktion === "link") zeile.link += e.anzahl;
+      else if (aktion === "anleitung") zeile.anleitung += e.anzahl;
+      zeile.total += e.anzahl;
     }
-    return Object.entries(summe)
-      .map(([id, anzahl]) => ({ label: toolName(id), anzahl }))
-      .sort((a, b) => b.anzahl - a.anzahl)
-      .slice(0, 12);
+    return Object.entries(proTool)
+      .map(([id, z]) => ({ id, name: toolName(id), ...z }))
+      .sort((a, b) => b.total - a.total);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zaehler, tools]);
 
-  const aktionen = useMemo(() => {
-    const summe: Record<string, number> = {};
-    for (const e of nachKategorie(zaehler, "tool")) {
-      const aktion = e.wert.split(":")[1] ?? "unbekannt";
-      summe[aktion] = (summe[aktion] ?? 0) + e.anzahl;
+  const aktionsSummen = useMemo(() => {
+    const s = { features: 0, link: 0, anleitung: 0 };
+    for (const z of toolZeilen) {
+      s.features += z.features;
+      s.link += z.link;
+      s.anleitung += z.anleitung;
     }
-    return Object.entries(summe)
-      .map(([a, anzahl]) => ({ label: AKTION_NAMEN[a] ?? a, anzahl }))
-      .sort((a, b) => b.anzahl - a.anzahl);
-  }, [zaehler]);
+    return s;
+  }, [toolZeilen]);
 
   const funktionen = useMemo(
     () =>
       nachKategorie(zaehler, "funktion").map((e) => ({
-        label: e.wert,
+        label: funktionsName(e.wert),
         anzahl: e.anzahl,
       })),
     [zaehler]
@@ -178,47 +218,147 @@ export function Dashboard({ tools }: { tools: StoredTool[] }) {
           Aufrufe der Adminseite werden bewusst nicht mitgezählt.
         </p>
       ) : (
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <h4 className="text-xs font-bold text-bbw-muted uppercase tracking-wide mb-2">
-              Seiten
-            </h4>
-            <Balken eintraege={seiten} leerText="Noch keine Aufrufe." />
+        <>
+          <div className="grid gap-5 md:grid-cols-2 mb-6">
+            <div>
+              <h4 className="text-xs font-bold text-bbw-muted uppercase tracking-wide mb-2">
+                Seiten
+              </h4>
+              <Balken eintraege={seiten} leerText="Noch keine Aufrufe." />
+            </div>
+
+            <div>
+              <h4 className="text-xs font-bold text-bbw-muted uppercase tracking-wide mb-2">
+                Funktionen
+              </h4>
+              <Balken
+                eintraege={funktionen}
+                leerText="Noch keine Funktionsnutzung."
+                farbe="bg-amber-600"
+              />
+            </div>
           </div>
 
-          <div>
-            <h4 className="text-xs font-bold text-bbw-muted uppercase tracking-wide mb-2">
-              Meistgenutzte Tools
-            </h4>
-            <Balken
-              eintraege={toolSummen}
-              leerText="Noch keine Tool-Interaktionen."
-              farbe="bg-bbw-purple"
-            />
-          </div>
+          <h4 className="text-xs font-bold text-bbw-muted uppercase tracking-wide mb-2">
+            Tools im Einzelnen
+          </h4>
 
-          <div>
-            <h4 className="text-xs font-bold text-bbw-muted uppercase tracking-wide mb-2">
-              Art der Tool-Nutzung
-            </h4>
-            <Balken
-              eintraege={aktionen}
-              leerText="Noch keine Tool-Interaktionen."
-              farbe="bg-blue-600"
-            />
-          </div>
-
-          <div>
-            <h4 className="text-xs font-bold text-bbw-muted uppercase tracking-wide mb-2">
-              Funktionen
-            </h4>
-            <Balken
-              eintraege={funktionen}
-              leerText="Noch keine Funktionsnutzung."
-              farbe="bg-amber-600"
-            />
-          </div>
-        </div>
+          {toolZeilen.length === 0 ? (
+            <p className="text-xs text-bbw-muted py-2">
+              Noch keine Tool-Interaktionen.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-bbw-muted border-b border-bbw-border">
+                    <th className="py-1.5 pr-3 font-semibold">Tool</th>
+                    <th
+                      className="py-1.5 px-2 font-semibold text-right"
+                      title="Wie oft die Feature-Liste aufgeklappt wurde"
+                    >
+                      Features
+                    </th>
+                    <th
+                      className="py-1.5 px-2 font-semibold text-right"
+                      title="Klicks auf einen Link des Tools"
+                    >
+                      Links
+                    </th>
+                    <th
+                      className="py-1.5 px-2 font-semibold text-right"
+                      title="Geöffnete Anleitungs-PDFs"
+                    >
+                      Anleitungen
+                    </th>
+                    <th className="py-1.5 pl-2 font-semibold text-right">
+                      Total
+                    </th>
+                    <th className="py-1.5 pl-3 w-1/4"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {toolZeilen.map((z) => (
+                    <tr
+                      key={z.id}
+                      className="border-b border-bbw-border last:border-0"
+                    >
+                      <td className="py-1.5 pr-3 font-semibold">{z.name}</td>
+                      <td className="py-1.5 px-2 text-right tabular-nums">
+                        {z.features || <span className="text-gray-300">–</span>}
+                      </td>
+                      <td className="py-1.5 px-2 text-right tabular-nums">
+                        {z.link || <span className="text-gray-300">–</span>}
+                      </td>
+                      <td className="py-1.5 px-2 text-right tabular-nums">
+                        {z.anleitung || (
+                          <span className="text-gray-300">–</span>
+                        )}
+                      </td>
+                      <td className="py-1.5 pl-2 text-right font-bold tabular-nums">
+                        {z.total}
+                      </td>
+                      <td className="py-1.5 pl-3">
+                        <div className="h-1.5 bg-bbw-bg rounded-full overflow-hidden flex">
+                          <div
+                            className="h-full bg-blue-600"
+                            style={{
+                              width: `${(z.features / toolZeilen[0].total) * 100}%`,
+                            }}
+                            title={`${z.features}× Features`}
+                          />
+                          <div
+                            className="h-full bg-bbw-primary"
+                            style={{
+                              width: `${(z.link / toolZeilen[0].total) * 100}%`,
+                            }}
+                            title={`${z.link}× Link`}
+                          />
+                          <div
+                            className="h-full bg-red-600"
+                            style={{
+                              width: `${(z.anleitung / toolZeilen[0].total) * 100}%`,
+                            }}
+                            title={`${z.anleitung}× Anleitung`}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-bbw-border text-bbw-muted">
+                    <td className="py-1.5 pr-3 font-semibold">
+                      Alle {toolZeilen.length} Tools
+                    </td>
+                    <td className="py-1.5 px-2 text-right tabular-nums">
+                      {aktionsSummen.features}
+                    </td>
+                    <td className="py-1.5 px-2 text-right tabular-nums">
+                      {aktionsSummen.link}
+                    </td>
+                    <td className="py-1.5 px-2 text-right tabular-nums">
+                      {aktionsSummen.anleitung}
+                    </td>
+                    <td className="py-1.5 pl-2 text-right font-bold tabular-nums">
+                      {aktionsSummen.features +
+                        aktionsSummen.link +
+                        aktionsSummen.anleitung}
+                    </td>
+                    <td className="py-1.5 pl-3 text-[0.6rem]">
+                      <span className="inline-block w-2 h-2 rounded-sm bg-blue-600 mr-1" />
+                      Features
+                      <span className="inline-block w-2 h-2 rounded-sm bg-bbw-primary ml-2 mr-1" />
+                      Links
+                      <span className="inline-block w-2 h-2 rounded-sm bg-red-600 ml-2 mr-1" />
+                      Anleitungen
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </>
       )}
 
       <p className="text-[0.65rem] text-bbw-muted mt-4 pt-3 border-t border-bbw-border">
