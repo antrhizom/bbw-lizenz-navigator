@@ -7,7 +7,13 @@ import { Tool, ToolArt } from "@/data/types";
 import { generateLicensePdf } from "@/lib/pdf-generator";
 import { trackEvent } from "@/lib/analytics";
 import { fetchPublicTools } from "@/lib/tools-repo";
-import { artVon, REGISTER, registerFuer } from "@/lib/edtech-register";
+import {
+  artVon,
+  GRUPPEN,
+  gruppeVon,
+  REGISTER,
+  registerFuer,
+} from "@/lib/edtech-register";
 import { mailtoLink } from "@/lib/kontakt";
 import { NRL_IKT } from "@/lib/dokumente";
 import { zaehle } from "@/lib/statistik";
@@ -370,6 +376,17 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
     });
   }, [filters, tools]);
 
+  /**
+   * Nach Gruppen gegliederte Trefferliste – nur ohne Filter verwendet.
+   * Leere Gruppen fallen weg, damit keine Überschriften ins Nichts zeigen.
+   */
+  const gruppiert = useMemo(() => {
+    return GRUPPEN.map((g) => ({
+      gruppe: g,
+      tools: filteredTools.filter((t) => gruppeVon(t.lizenz) === g.id),
+    })).filter((g) => g.tools.length > 0);
+  }, [filteredTools]);
+
   const activeFilterLabels = useMemo(() => {
     const labels: string[] = [];
     if (filters.lizenzKategorie) labels.push(filters.lizenzKategorie);
@@ -629,13 +646,46 @@ export default function EdTechUebersicht({ art }: { art: ToolArt }) {
         </div>
       )}
 
-      {/* Tools Grid */}
+      {/* Tools: ohne Filter nach Gruppen gegliedert, mit Filter als flache Liste */}
       {filteredTools.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTools.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} lizenzLabel={register.lizenzLabel} />
-          ))}
-        </div>
+        hasActiveFilters ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTools.map((tool) => (
+              <ToolCard
+                key={tool.id}
+                tool={tool}
+                lizenzLabel={register.lizenzLabel}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {gruppiert.map(({ gruppe, tools: gTools }) => (
+              <section key={gruppe.id}>
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3 pb-1.5 border-b border-bbw-border">
+                  <h3 className="text-base font-bold text-bbw-primary">
+                    {gruppe.titel}
+                  </h3>
+                  <span className="text-xs text-bbw-muted">
+                    {gTools.length}
+                  </span>
+                  <span className="text-xs text-bbw-muted">
+                    {gruppe.erklaerung}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {gTools.map((tool) => (
+                    <ToolCard
+                      key={tool.id}
+                      tool={tool}
+                      lizenzLabel={register.lizenzLabel}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )
       ) : (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <p className="text-bbw-muted text-sm">{register.leerText}</p>

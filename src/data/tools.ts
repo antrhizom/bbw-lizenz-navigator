@@ -602,6 +602,37 @@ export const TOOLS: Tool[] = [
     lpVorbDesc: "Erklärfilme für den Unterricht produzieren",
   },
   {
+    id: "notebooklm",
+    name: "NotebookLM",
+    typ: "KI-Recherche, Wissensassistenz",
+    ki: true,
+    lernende: true,
+    lernendeDetail: "Nur mit eigenem, privatem Konto – freiwillig",
+    lp: true,
+    lizenz: "Kostenlos (eigenes Konto nötig)",
+    lizenzDetail:
+      "Nicht im Schulangebot: es braucht ein eigenes, privates Google-Konto. Die Nutzung ist freiwillig und darf nicht verlangt werden.",
+    funcs: "Eigene Dokumente befragen, zusammenfassen und als Audio anhören",
+    features: [
+      "Antworten stützen sich auf die selbst hochgeladenen Quellen – mit Verweis auf die Stelle im Dokument",
+      "Fasst PDF, Text, Folien und Webseiten zu Übersichten und Merklisten zusammen",
+      "Erzeugt aus dem Material einen Audio-Überblick im Gesprächsformat – gut zum Repetieren unterwegs",
+      "Erstellt Fragen zum Stoff, dadurch als Lernkontrolle nutzbar",
+      "Deutlich weniger erfundene Inhalte als ein allgemeiner Chatbot, weil nur das eigene Material zählt",
+      "Mehrere Themen lassen sich als getrennte Notizbücher führen",
+    ],
+    zugang:
+      "Kostenlos über notebooklm.google.com mit einem eigenen, privaten Konto. Das Schul-Login darf dafür nicht verwendet werden. Fragen an pikt@bbw.ch oder direkt bei einer PIKTS-Person.",
+    einzellizenzInfo:
+      "Kein Schulangebot: Registrierung ist freiwillig und darf niemandem vorgeschrieben werden. Keine Personendaten und keine vertraulichen Schulunterlagen hochladen.",
+    website: "https://notebooklm.google.com",
+    beherrschen: false, lernen: true, lpOrg: false, lpVorb: true,
+    behDesc: "",
+    lernDesc: "Eigene Unterlagen zusammenfassen, abfragen und als Audio repetieren",
+    lpOrgDesc: "",
+    lpVorbDesc: "Fachtexte erschliessen, Zusammenfassungen und Fragen zum Stoff vorbereiten",
+  },
+  {
     id: "canva",
     name: "Canva",
     typ: "Dokumentengestaltung, Mediengenerator",
