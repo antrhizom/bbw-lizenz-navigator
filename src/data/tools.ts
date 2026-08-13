@@ -95,7 +95,8 @@ export const TOOLS: Tool[] = [
     lernende: false,
     lp: false,
     lizenz: "Kantonslizenz",
-    lizenzDetail: "Lizenzen nur in begrenzter Zahl verfügbar.",
+    lizenzDetail:
+      "Nur 12 Einzellizenzen verfügbar, befristet bis Ende 2026.",
     funcs: "Intelligentes Lerntraining",
     features: [
       "KI-gestütztes adaptives Lerntraining",
@@ -104,7 +105,8 @@ export const TOOLS: Tool[] = [
       "Spaced-Repetition-Algorithmus für nachhaltiges Lernen",
       "Fortschrittsanalyse und Lernstatistiken",
     ],
-    zugang: "Automatisch über Kantonslizenz verfügbar. Login via Schulkonto.",
+    zugang:
+      "Begrenzte Anzahl: 12 Einzellizenzen bis Ende 2026. Zuteilung auf Anfrage: pikt@bbw.ch oder direkt bei einer PIKTS-Person.",
     beherrschen: false, lernen: false, lpOrg: false, lpVorb: true,
     behDesc: "", lernDesc: "", lpOrgDesc: "",
     lpVorbDesc: "Lernmaterialien erstellen, Lernfortschritte anlegen",
