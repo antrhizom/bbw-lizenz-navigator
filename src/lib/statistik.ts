@@ -1,4 +1,9 @@
-import { getDocument, incrementFields, listDocuments } from "./firestore-rest";
+import {
+  deleteDocument,
+  getDocument,
+  incrementFields,
+  listDocuments,
+} from "./firestore-rest";
 
 /**
  * Einfache Nutzungsstatistik.
@@ -79,6 +84,20 @@ export async function ladeMonat(
     if (typeof v === "number") zaehler[k] = v;
   }
   return { monat, zaehler };
+}
+
+/**
+ * Löscht die Zahlen eines Monats (oder aller Monate) – nur für Admin-Konten,
+ * die Regeln lassen das Löschen sonst nicht zu.
+ */
+export async function loescheStatistik(monat?: string): Promise<number> {
+  const monate = monat
+    ? [monat]
+    : (await listDocuments(STATISTIK_COLLECTION)).map((d) => d.id);
+  for (const m of monate) {
+    await deleteDocument(STATISTIK_COLLECTION, m);
+  }
+  return monate.length;
 }
 
 /** Zähler einer Kategorie, absteigend sortiert. */

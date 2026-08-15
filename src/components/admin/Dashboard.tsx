@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ladeStatistik,
+  loescheStatistik,
   MonatsStatistik,
   nachKategorie,
   summiere,
@@ -93,6 +94,27 @@ export function Dashboard({ tools }: { tools: StoredTool[] }) {
   const [monate, setMonate] = useState<MonatsStatistik[] | null>(null);
   const [fehler, setFehler] = useState<string | null>(null);
   const [auswahl, setAuswahl] = useState<string>("alle");
+  const [loeschtGerade, setLoeschtGerade] = useState(false);
+
+  const zahlenLoeschen = async () => {
+    const was = auswahl === "alle" ? "alle Monate" : auswahl;
+    if (
+      !window.confirm(
+        `Die Nutzungszahlen für ${was} unwiderruflich löschen? Die Zählung startet danach bei null.`
+      )
+    )
+      return;
+    setLoeschtGerade(true);
+    try {
+      await loescheStatistik(auswahl === "alle" ? undefined : auswahl);
+      setMonate(await ladeStatistik());
+      setAuswahl("alle");
+    } catch (err) {
+      setFehler((err as Error).message);
+    } finally {
+      setLoeschtGerade(false);
+    }
+  };
 
   useEffect(() => {
     ladeStatistik()
@@ -198,10 +220,18 @@ export function Dashboard({ tools }: { tools: StoredTool[] }) {
         <span className="text-xs text-bbw-muted">
           {seitenTotal} Seitenaufrufe
         </span>
+        <button
+          onClick={zahlenLoeschen}
+          disabled={loeschtGerade || monate.length === 0}
+          title="Löscht die gezählten Werte des gewählten Zeitraums. Die Tools und Einstellungen bleiben unberührt."
+          className="ml-auto text-xs text-bbw-muted hover:text-red-700 hover:underline disabled:opacity-40"
+        >
+          {loeschtGerade ? "Wird gelöscht…" : "Zahlen zurücksetzen"}
+        </button>
         <select
           value={auswahl}
           onChange={(e) => setAuswahl(e.target.value)}
-          className="ml-auto px-2 py-1 border border-bbw-border rounded-lg text-xs bg-white"
+          className="px-2 py-1 border border-bbw-border rounded-lg text-xs bg-white"
         >
           <option value="alle">Alle Monate</option>
           {monate.map((m) => (
@@ -363,8 +393,11 @@ export function Dashboard({ tools }: { tools: StoredTool[] }) {
 
       <p className="text-[0.65rem] text-bbw-muted mt-4 pt-3 border-t border-bbw-border">
         Gezählt werden anonyme Summen pro Monat – keine Kennungen, keine
-        Sitzungen, keine Zuordnung zu Personen. Aufrufe der Adminseite zählen
-        nicht mit.
+        Sitzungen, keine Zuordnung zu Personen. Ein Seitenaufruf zählt erst bei
+        tatsächlicher Nutzung: nach einer Interaktion oder zehn Sekunden
+        Verweildauer. Das hält Suchmaschinen- und KI-Crawler draussen, die eine
+        Seite nur laden und sofort wieder verschwinden. Aufrufe der Adminseite
+        zählen nicht mit.
       </p>
     </div>
   );
