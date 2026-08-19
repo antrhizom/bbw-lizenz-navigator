@@ -552,6 +552,45 @@ export const TOOLS: Tool[] = [
     lpVorbDesc: "Professionelle Unterrichtsmedien, Grafiken und Videos erstellen",
   },
   {
+    id: "annotator",
+    name: "PDF Annotator",
+    typ: "PDF-Bearbeitung, Annotation",
+    ki: false,
+    lernende: true,
+    lp: true,
+    lizenz: "BBW-Schullizenz",
+    lizenzDetail:
+      "Die Lizenzschlüssel sind in OpenOlat abgelegt – im Onboarding-Installationskurs und auf der PIKT-Help-Seite (Links unten).",
+    funcs: "PDF handschriftlich und mit Text kommentieren",
+    features: [
+      "Handschriftliche Notizen und Zeichnungen direkt im PDF, mit Stift oder Touch",
+      "Text markieren, unterstreichen, durchstreichen und kommentieren",
+      "Seiten einfügen, löschen, drehen und neu anordnen",
+      "Leere oder linierte Seiten für eigene Notizen ergänzen",
+      "Stempel, Formen und Textfelder setzen",
+      "Speichern als gewöhnliches PDF – überall weiter lesbar, auch ohne das Programm",
+      "Windows-Programm: funktioniert offline, ohne Anmeldung bei einem Dienst",
+    ],
+    zugang:
+      "Windows-Programm mit Lizenzschlüssel. Schlüssel und Installationsanleitung über die Links unten in OpenOlat (Anmeldung nötig). Fragen an pikt@bbw.ch oder direkt bei einer PIKTS-Person.",
+    links: [
+      {
+        label: "Schlüssel im Onboarding-Kurs",
+        url: "https://olat.bbw.ch/auth/RepositoryEntry/864190634/CourseNode/111901626706437",
+      },
+      {
+        label: "Schlüssel auf PIKT-Help",
+        url: "https://olat.bbw.ch/auth/RepositoryEntry/769949733/CourseNode/114340153943504",
+      },
+      { label: "Herstellerseite", url: "https://www.pdfannotator.com/de/" },
+    ],
+    beherrschen: false, lernen: true, lpOrg: false, lpVorb: true,
+    behDesc: "",
+    lernDesc: "Unterlagen und Arbeitsblätter direkt im PDF bearbeiten und Notizen festhalten",
+    lpOrgDesc: "",
+    lpVorbDesc: "Unterlagen kommentieren, Korrekturen anbringen, Materialien aufbereiten",
+  },
+  {
     id: "learningapps",
     name: "learningapps",
     typ: "Lernbausteine",
